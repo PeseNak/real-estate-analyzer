@@ -2,13 +2,19 @@ from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
+from selenium.webdriver.chrome.options import Options
 from persian_tools import digits
 import json
 from time import sleep
 
 ads_link = set()
 ads = []
-driver = webdriver.Chrome()
+options = Options()
+prefs = {"profile.managed_default_content_settings.images": 2}
+options.add_experimental_option("prefs", prefs)
+options.add_argument('--headless')
+options.add_argument('--window-size=1920,1080')
+driver = webdriver.Chrome(options=options)
 city = "tehran"
 try:
     driver.get(f"https://divar.ir/s/{city}/real-estate")
@@ -19,9 +25,9 @@ try:
 except:
     print("bastan map be moshkel khod!!!")
 
-for _ in range(3):
+for _ in range(2):
     WebDriverWait(driver, 5).until(
-            EC.presence_of_element_located((By.CSS_SELECTOR, "a.unsafe-kt-post-card__action")))
+        EC.presence_of_element_located((By.CSS_SELECTOR, "a.unsafe-kt-post-card__action")))
     temp = driver.find_elements(
         By.CSS_SELECTOR, "a.unsafe-kt-post-card__action")
     for element in temp:
@@ -29,7 +35,7 @@ for _ in range(3):
     driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
     sleep(1)
 
-print("tedad link ha: " ,len(ads_link))
+print("tedad link ha: ", len(ads_link))
 
 for link in ads_link:
     driver.get(link)
@@ -72,6 +78,6 @@ for link in ads_link:
     except:
         continue
 print("scrap moafagh", len(ads))
-with open("ads.json", "w",encoding="utf-8") as file:
+with open("ads.json", "w", encoding="utf-8") as file:
     json.dump(ads, file, ensure_ascii=False, indent=2)
 driver.quit()
