@@ -12,25 +12,25 @@ ads = []
 options = Options()
 prefs = {"profile.managed_default_content_settings.images": 2}
 options.add_experimental_option("prefs", prefs)
-options.add_argument('--headless')
+# options.add_argument('--headless')
 options.add_argument('--window-size=1920,1080')
 driver = webdriver.Chrome(options=options)
-city = "tehran"
+city = "langarud"
 driver.get(f"https://www.sheypoor.com/s/{city}/real-estate")
 sleep(1)
 for i in range(8):
 
-    temp1 = driver.find_elements(
+    sections = driver.find_elements(
         By.CSS_SELECTOR, 'section[item = "[object Object]"]')
-    for idk in temp1:
-        kir = idk.find_elements(
+    for section in sections:
+        section_title = section.find_elements(
             By.CSS_SELECTOR, 'h2.text-heading-4-bolder.text-dark-0')
-        if kir:
-            if kir[0].text == "ویترین سراسری":
+        if section_title:
+            if section_title[0].text == "ویترین سراسری":
                 continue
-        temp2 = idk.find_elements(
+        section_ads_link = section.find_elements(
             By.CSS_SELECTOR, 'a[data-test-id^="ad-item-"]')
-        for element in temp2:
+        for element in section_ads_link:
             if element.find_elements(By.CSS_SELECTOR, 'p.inline-block.pl-1.text-body-2-normal.text-blue-1'):
                 continue
             ads_link.add(element.get_attribute("href"))
@@ -76,7 +76,7 @@ for link in ads_link:
                 ",", "").replace(" تومان", "")
         ads.append(ad_data)
     except:
-        continue
+        print(f"in link kar nakard {link}")
 print("scrap moafagh", len(ads))
 with open("ads2.json", "w", encoding="utf-8") as file:
     json.dump(ads, file, ensure_ascii=False, indent=2)
