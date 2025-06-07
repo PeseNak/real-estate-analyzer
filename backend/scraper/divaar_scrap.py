@@ -12,10 +12,11 @@ ads = []
 options = Options()
 prefs = {"profile.managed_default_content_settings.images": 2}
 options.add_experimental_option("prefs", prefs)
-# options.add_argument('--headless')
+options.add_argument('--headless')
+options.add_argument('--disable-gpu')
 options.add_argument('--window-size=1920,1080')
 driver = webdriver.Chrome(options=options)
-city = "langarud"
+city = "tehran"
 try:
     driver.get(f"https://divar.ir/s/{city}/real-estate")
     close_map_button = driver.find_element(
@@ -25,7 +26,7 @@ try:
 except:
     print("bastan map be moshkel khod!!!")
 
-for _ in range(1):
+for _ in range(3):
     WebDriverWait(driver, 5).until(
         EC.presence_of_element_located((By.CSS_SELECTOR, "a.unsafe-kt-post-card__action")))
     temp = driver.find_elements(
@@ -43,7 +44,6 @@ for link in ads_link:
         WebDriverWait(driver, 5).until(
             EC.presence_of_element_located((By.CSS_SELECTOR, "td.kt-group-row-item.kt-group-row-item__value.kt-group-row-item--info-row")))
     except:
-        print(f"vaaaaaaaaaaaaaaay {link}")
         continue
     try:
         value2 = driver.find_elements(
@@ -82,7 +82,7 @@ for link in ads_link:
 
         ads.append(ad_data)
     except:
-        print(f"in link kar nakard {link}")
+        continue
 print("scrap moafagh", len(ads))
 with open("ads.json", "w", encoding="utf-8") as file:
     json.dump(ads, file, ensure_ascii=False, indent=2)

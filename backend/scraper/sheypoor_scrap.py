@@ -12,10 +12,11 @@ ads = []
 options = Options()
 prefs = {"profile.managed_default_content_settings.images": 2}
 options.add_experimental_option("prefs", prefs)
-# options.add_argument('--headless')
+options.add_argument('--headless')
+options.add_argument('--disable-gpu')
 options.add_argument('--window-size=1920,1080')
 driver = webdriver.Chrome(options=options)
-city = "langarud"
+city = "tehran"
 driver.get(f"https://www.sheypoor.com/s/{city}/real-estate")
 sleep(1)
 for i in range(8):
@@ -76,7 +77,7 @@ for link in ads_link:
                 ",", "").replace(" تومان", "")
         ads.append(ad_data)
     except:
-        print(f"in link kar nakard {link}")
+        continue
 print("scrap moafagh", len(ads))
 with open("ads2.json", "w", encoding="utf-8") as file:
     json.dump(ads, file, ensure_ascii=False, indent=2)
