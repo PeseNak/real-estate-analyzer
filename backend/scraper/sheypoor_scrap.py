@@ -32,42 +32,18 @@ def get_driver(headless):
     if headless:
         options.add_argument('--headless=new')
 
-    service = Service(r"backend\chromedriver.exe")
+    service = Service(r"D:\code daneshgah\payan_term_2_pishrafte\backend\chromedriver.exe")
     driver = webdriver.Chrome(service=service, options=options)
     return driver
 
 
-def scrap(city: str, scroll_count: int = 12, is_headless: bool = True):
-    client = pymongo.MongoClient("mongodb://localhost:27017/")
-    db = client["sheypor_db"]
-    update_collection = db[f"{city}_time"]
-    data = update_collection.find_one()
-
-    now = datetime.now(timezone.utc)
-    if data and "last_update" in data:
-        diff = now - data["last_update"].replace(tzinfo=timezone.utc)
-        if diff >= timedelta(hours=12):
-            update_collection.delete_many({})
-            update_collection.insert_one({"last_update": now})
-        else:
-            print(f"*******************GHabli hanooz daghe  |  {diff}")
-            return
-    else:
-        print("++++++++++++++++++++++++++++++++++++")
-        update_collection.insert_one({"last_update": now})
-
+def run_scraper(city: str, scroll_count: int = 12, is_headless: bool = True):
+    
     driver = get_driver(is_headless)
     ads_link = set()
     for_sale = []
     for_rent = []
     err = []
-
-    rent_collection = db[f"{city}_rent"]
-    sale_collection = db[f"{city}_sale"]
-    err_collection = db[f"{city}_err"]
-    rent_collection.delete_many({})
-    sale_collection.delete_many({})
-    err_collection.delete_many({})
 
     driver.get(f"https://www.sheypoor.com/s/{city}/real-estate")
     sleep(1)
@@ -85,6 +61,19 @@ def scrap(city: str, scroll_count: int = 12, is_headless: bool = True):
                 By.CSS_SELECTOR, 'a[data-test-id^="ad-item-"]')
             for element in section_ads_link:
                 if element.find_elements(By.CSS_SELECTOR, 'p.inline-block.pl-1.text-body-2-normal.text-blue-1'):
+                    continue
+                if tavafogh := element.find_elements(By.CSS_SELECTOR, "span.text-heading-5-normal"):
+                    if tavafogh[0].text == "توافقی":
+                        print(
+                            f"kiiiiiiiiiiiiiir {element.get_attribute("href")}")
+                        continue
+                isbad = False
+                for word in ["روزانه", "صنعتی", "تجاری", "اداری", "پانسیون", "مغازه", "هم خونه", "همخونه",]:
+                    if word in element.find_element(By.TAG_NAME, "h2").text:
+                        isbad = True
+                        break
+                if isbad:
+                    print(f"&&&&&&&&{element.get_attribute("href")}")
                     continue
                 ads_link.add(element.get_attribute("href"))
         driver.execute_script(
@@ -123,8 +112,6 @@ def scrap(city: str, scroll_count: int = 12, is_headless: bool = True):
                 By.CSS_SELECTOR, "span.flex.items-center.text-heading-4-bolder.\\!text-heading-3-bolder.\\[\\&_span\\]\\:\\!size-6")
             if gheymat_kol:
                 gheymat_metri = keys.index("قیمت هر متر")
-                # if ad_data["gheymat_kol"] == "توافقی" or ad_data["gheymat_metri"] == "توافقی":
-                #     continue
                 ad_data["total_price_toman"] = int(digits.convert_to_en(
                     gheymat_kol[0].text.replace(",", "")))
                 ad_data["price_per_m2_toman"] = int(values[gheymat_metri].replace(
@@ -153,10 +140,9 @@ def scrap(city: str, scroll_count: int = 12, is_headless: bool = True):
 
     print("***************Foroosh moafagh", len(for_sale))
     print("*****************Ejare moafagh", len(for_rent))
-    if for_sale and for_rent:
-        rent_collection.insert_many(for_rent)
-        sale_collection.insert_many(for_sale)
-        err_collection.insert_many(err)
+    print("*****************err moafagh", len(err))
 
+    return for_sale, for_rent
 
-scrap("hashtgerd", 5, False)
+if __name__ == "__main__":
+    print("this is a module!")
