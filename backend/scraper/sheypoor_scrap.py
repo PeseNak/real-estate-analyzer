@@ -4,11 +4,10 @@ from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.chrome.service import Service
-from datetime import datetime, timezone, timedelta
 from persian_tools import digits
-import pymongo
 from tqdm import tqdm
 from time import sleep
+import os
 
 
 def get_driver(headless):
@@ -32,13 +31,16 @@ def get_driver(headless):
     if headless:
         options.add_argument('--headless=new')
 
-    service = Service(r"D:\code daneshgah\payan_term_2_pishrafte\backend\chromedriver.exe")
+    script_dir = os.path.dirname(os.path.abspath(__file__))
+
+    driver_path = os.path.join(script_dir, '..', 'chromedriver.exe') 
+    service = Service(driver_path)
     driver = webdriver.Chrome(service=service, options=options)
     return driver
 
 
 def run_scraper(city: str, scroll_count: int = 12, is_headless: bool = True):
-    
+
     driver = get_driver(is_headless)
     ads_link = set()
     for_sale = []
@@ -65,7 +67,7 @@ def run_scraper(city: str, scroll_count: int = 12, is_headless: bool = True):
                 if tavafogh := element.find_elements(By.CSS_SELECTOR, "span.text-heading-5-normal"):
                     if tavafogh[0].text == "توافقی":
                         print(
-                            f"kiiiiiiiiiiiiiir {element.get_attribute("href")}")
+                            f"TAVAFOGHI {element.get_attribute("href")}")
                         continue
                 isbad = False
                 for word in ["روزانه", "صنعتی", "تجاری", "اداری", "پانسیون", "مغازه", "هم خونه", "همخونه",]:
@@ -81,7 +83,7 @@ def run_scraper(city: str, scroll_count: int = 12, is_headless: bool = True):
         sleep(1)
     print("********************tedad link ha: ", len(ads_link))
 
-    for link in tqdm(ads_link, desc="scraping"):
+    for link in tqdm(ads_link, desc="sheypoor scraping"):
         driver.get(link)
         try:
             brooo = driver.find_element(
@@ -143,6 +145,7 @@ def run_scraper(city: str, scroll_count: int = 12, is_headless: bool = True):
     print("*****************err moafagh", len(err))
 
     return for_sale, for_rent
+
 
 if __name__ == "__main__":
     print("this is a module!")

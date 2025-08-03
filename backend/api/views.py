@@ -31,8 +31,8 @@ def get_city_data_view(request, city_name):
 
     if should_scrape:
         print("[SCRAPER] Starting scraping process...")
-        divar_sale, divar_rent = run_divar_scraper(city_name)
-        sheypoor_sale, sheypoor_rent = run_sheypoor_scraper(city_name)
+        divar_sale, divar_rent = run_divar_scraper(city_name, 2)
+        sheypoor_sale, sheypoor_rent = run_sheypoor_scraper(city_name, 10)
         all_sales = divar_sale + sheypoor_sale
         all_rentals = divar_rent + sheypoor_rent
 
@@ -75,8 +75,7 @@ def analyze_properties_with_azure_ai(property_list, property_type):
     endpoint = "https://models.github.ai/inference"
     model = "openai/gpt-4.1"
     load_dotenv()
-    token = os.getenv("AZURE_AI_TOKEN")
-
+    token = os.getenv("AI_API_TOKEN")
     client = ChatCompletionsClient(
         endpoint=endpoint,
         credential=AzureKeyCredential(token)

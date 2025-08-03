@@ -4,15 +4,13 @@ from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.chrome.service import Service
-from datetime import datetime, timezone, timedelta
 from persian_tools import digits
-import pymongo
 from tqdm import tqdm
 from time import sleep
+import os
 
 
-
-def run_scraper( city: str, scroll_count: int = 3, is_headless: bool = True):
+def run_scraper(city: str, scroll_count: int = 3, is_headless: bool = True):
     driver = get_driver(is_headless)
     ads_link = set()
     for_sale = []
@@ -48,7 +46,7 @@ def run_scraper( city: str, scroll_count: int = 3, is_headless: bool = True):
 
     print("*******************tedad link ha: ", len(ads_link))
 
-    for link in tqdm(ads_link, desc="scraping"):
+    for link in tqdm(ads_link, desc="diavr scraping"):
         driver.get(link)
         try:
             WebDriverWait(driver, 5).until(
@@ -113,6 +111,7 @@ def run_scraper( city: str, scroll_count: int = 3, is_headless: bool = True):
 
     return for_sale, for_rent
 
+
 def get_driver(headless):
     options = Options()
     prefs = {"profile.managed_default_content_settings.images": 2}
@@ -134,7 +133,10 @@ def get_driver(headless):
     if headless:
         options.add_argument('--headless=new')
 
-    service = Service(r"D:\code daneshgah\payan_term_2_pishrafte\backend\chromedriver.exe")
+    script_dir = os.path.dirname(os.path.abspath(__file__))
+
+    driver_path = os.path.join(script_dir, '..', 'chromedriver.exe') 
+    service = Service(driver_path)
     driver = webdriver.Chrome(service=service, options=options)
     return driver
 

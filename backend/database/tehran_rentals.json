@@ -1,0 +1,58 @@
+[
+  {
+    "link": "https://divar.ir/v/%D8%A7%D8%AC%D8%A7%D8%B1%D9%87-%D8%A7%D9%BE%D8%A7%D8%B1%D8%AA%D9%85%D8%A7%D9%86/AaOS18SX",
+    "area_m2": 70,
+    "building_age": 13,
+    "room_count": 1,
+    "deposit_toman": 150000000,
+    "monthly_rent_toman": 11000000
+  },
+  {
+    "link": "https://divar.ir/v/%D8%A7%D8%AC%D8%A7%D8%B1%D9%87-%D8%A2%D9%BE%D8%A7%D8%B1%D8%AA%D9%85%D8%A7%D9%86-%D8%B4%DB%8C%DA%A9-%D8%A8%D8%B1%D8%A7%DB%8C-%D8%B2%D9%88%D8%AC-%D8%AC%D9%88%D8%A7%D9%86/AaO-UqhU",
+    "area_m2": 56,
+    "building_age": 13,
+    "room_count": 1,
+    "deposit_toman": 250000000,
+    "monthly_rent_toman": 10000000
+  },
+  {
+    "link": "https://www.sheypoor.com/v/75%D9%85%D8%AA%D8%B1-%D8%A8%D8%B3-%D8%A7%D8%B1-%D8%B9%D8%A7%D9%84-%D8%AF%D8%B1-%D9%86%D8%A7%D8%B1%D9%85-454388180.html",
+    "area_m2": 75,
+    "building_age": 19,
+    "room_count": 2,
+    "mortgage_toman": 800000000,
+    "monthly_rent_toman": 9000000
+  },
+  {
+    "link": "https://www.sheypoor.com/v/%D8%A7%D8%AC%D8%A7%D8%B1%D9%87-%D8%AD-%D8%A7%D8%B7-%D8%AF%D8%B1%D8%A8%D8%B3%D8%AA-%D8%B7%D8%A8%D9%82%D9%87-%D9%87%D9%85-%D9%81-%D8%B3%D8%B1-%D8%B4%D9%85%D9%87-%D8%AA%D9%87%D8%B1%D8%A7%D9%86-454387902.html",
+    "area_m2": 50,
+    "building_age": 34,
+    "room_count": 0,
+    "mortgage_toman": 25000000,
+    "monthly_rent_toman": 12000000
+  },
+  {
+    "link": "https://www.sheypoor.com/v/%D8%A7%D8%AC%D8%A7%D8%B1%D9%87-%D8%A2-%D8%A7%D8%B1%D8%AA%D9%85%D8%A7%D9%86-150-%D9%85%D8%AA%D8%B1-%D8%AF%D8%B1-%D9%86-%D8%A7%D9%88%D8%B1%D8%A7%D9%86-454281897.html",
+    "area_m2": 150,
+    "building_age": 4,
+    "room_count": 3,
+    "mortgage_toman": 4500000000,
+    "monthly_rent_toman": 60000000
+  },
+  {
+    "link": "https://www.sheypoor.com/v/%D8%A7%D8%AC%D8%A7%D8%B1%D9%87-%D8%A2-%D8%A7%D8%B1%D8%AA%D9%85%D8%A7%D9%86-53-%D9%85%D8%AA%D8%B1-1%D8%AE%D9%88%D8%A7%D8%A8%D9%87-%D8%AF%D8%B1-%D9%85%D9%88%D9%84%D9%88-454388207.html",
+    "area_m2": 53,
+    "building_age": 17,
+    "room_count": 1,
+    "mortgage_toman": 300000000,
+    "monthly_rent_toman": 100000
+  },
+  {
+    "link": "https://www.sheypoor.com/v/65%D9%85%D8%AA%D8%B1-%D8%A2-%D8%A7%D8%B1%D8%AA%D9%85%D8%A7%D9%86-%D8%B3%D8%B9%D8%A7%D8%AF%D8%AA-%D8%A2%D8%A8%D8%A7%D8%AF-%D8%AF%D8%B1-%D8%A7-%D8%AD%D8%AA-%D9%85%D8%AC%D8%B1%D8%AF-453580632.html",
+    "area_m2": 65,
+    "building_age": 18,
+    "room_count": 1,
+    "mortgage_toman": 400000000,
+    "monthly_rent_toman": 26000000
+  }
+]
