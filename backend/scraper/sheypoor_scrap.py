@@ -10,35 +10,6 @@ from time import sleep
 import os
 
 
-def get_driver(headless):
-    options = Options()
-    prefs = {"profile.managed_default_content_settings.images": 2}
-    options.add_experimental_option("prefs", prefs)
-    options.add_argument('--disable-gpu')
-    options.add_argument('--window-size=1920,1080')
-
-    options.add_argument('--disable-logging')
-    options.add_argument("--log-level=3")
-    options.add_argument('--disable-background-networking')
-    options.add_argument('--disable-client-side-phishing-detection')
-    options.add_argument('--disable-default-apps')
-    options.add_argument('--disable-sync')
-    options.add_argument('--metrics-recording-only')
-    options.add_argument('--no-first-run')
-    options.add_argument('--disable-component-update')
-    options.add_argument('--disable-domain-reliability')
-    options.add_argument('--disable-breakpad')
-    if headless:
-        options.add_argument('--headless=new')
-
-    script_dir = os.path.dirname(os.path.abspath(__file__))
-
-    driver_path = os.path.join(script_dir, '..', 'chromedriver.exe') 
-    service = Service(driver_path)
-    driver = webdriver.Chrome(service=service, options=options)
-    return driver
-
-
 def run_scraper(city: str, scroll_count: int = 12, is_headless: bool = True):
 
     driver = get_driver(is_headless)
@@ -95,9 +66,16 @@ def run_scraper(city: str, scroll_count: int = 12, is_headless: bool = True):
                 By.CSS_SELECTOR, "span.text-heading-4-bolder")
             values = list(map(lambda x: digits.convert_to_en(x.text), values))
 
+            try:
+                image_element = WebDriverWait(driver, 10).until(
+                            EC.presence_of_element_located((By.CSS_SELECTOR, "img.h-full.w-full.select-none.desktop\:w-full.object-cover"))
+                        )
+                image_url = image_element.get_attribute("src")
+            except:
+                image_url = "https://iliadata.ir/images/estate_images/default.jpg"
+
             metrazh = keys.index("متراژ")
             sen_banna = int(values[keys.index("سن بنا")].replace(" سال", ""))
-            # sal_sakht = 1404 - sal_sakht
             otagh = keys.index("تعداد اتاق")
 
             if values[otagh] == "بدون اتاق":
@@ -105,6 +83,7 @@ def run_scraper(city: str, scroll_count: int = 12, is_headless: bool = True):
 
             ad_data = {
                 "link": link,
+                "image": image_url,
                 "area_m2": int(values[metrazh]),
                 "building_age": sen_banna,
                 "room_count": int(values[otagh])
@@ -146,6 +125,33 @@ def run_scraper(city: str, scroll_count: int = 12, is_headless: bool = True):
 
     return for_sale, for_rent
 
+def get_driver(headless):
+    options = Options()
+    prefs = {"profile.managed_default_content_settings.images": 2}
+    options.add_experimental_option("prefs", prefs)
+    options.add_argument('--disable-gpu')
+    options.add_argument('--window-size=1920,1080')
+
+    options.add_argument('--disable-logging')
+    options.add_argument("--log-level=3")
+    options.add_argument('--disable-background-networking')
+    options.add_argument('--disable-client-side-phishing-detection')
+    options.add_argument('--disable-default-apps')
+    options.add_argument('--disable-sync')
+    options.add_argument('--metrics-recording-only')
+    options.add_argument('--no-first-run')
+    options.add_argument('--disable-component-update')
+    options.add_argument('--disable-domain-reliability')
+    options.add_argument('--disable-breakpad')
+    if headless:
+        options.add_argument('--headless=new')
+
+    script_dir = os.path.dirname(os.path.abspath(__file__))
+
+    driver_path = os.path.join(script_dir, '..', 'chromedriver.exe') 
+    service = Service(driver_path)
+    driver = webdriver.Chrome(service=service, options=options)
+    return driver
 
 if __name__ == "__main__":
     print("this is a module!")

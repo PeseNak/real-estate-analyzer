@@ -58,6 +58,13 @@ def run_scraper(city: str, scroll_count: int = 3, is_headless: bool = True):
                 By.CSS_SELECTOR, "td.kt-group-row-item.kt-group-row-item__value.kt-group-row-item--info-row")
             value1 = driver.find_elements(
                 By.CSS_SELECTOR, "p.kt-unexpandable-row__value")
+            try:
+                image_element = WebDriverWait(driver, 10).until(
+                            EC.presence_of_element_located((By.CSS_SELECTOR, "img.kt-image-block__image.kt-image-block__image--fading"))
+                        )
+                image_url = image_element.get_attribute("src")
+            except:
+                image_url = "https://iliadata.ir/images/estate_images/default.jpg"
 
             value1 = [digits.convert_to_en(val.text) for val in value1]
             value2 = [digits.convert_to_en(val.text) for val in value2]
@@ -72,6 +79,7 @@ def run_scraper(city: str, scroll_count: int = 3, is_headless: bool = True):
 
             ad_data = {
                 "link": link,
+                "image": image_url,
                 "area_m2": int(value2[0]),
                 "building_age": 1404 - int(value2[1]),
                 "room_count": int(value2[2])
@@ -135,7 +143,7 @@ def get_driver(headless):
 
     script_dir = os.path.dirname(os.path.abspath(__file__))
 
-    driver_path = os.path.join(script_dir, '..', 'chromedriver.exe') 
+    driver_path = os.path.join(script_dir, '..', 'chromedriver.exe')
     service = Service(driver_path)
     driver = webdriver.Chrome(service=service, options=options)
     return driver

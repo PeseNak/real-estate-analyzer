@@ -3,6 +3,8 @@ import { Search, ChevronUp, ChevronDown } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import Header from '../components/Header';
 import AuthModal from '../components/AuthModal';
+import { cities, City } from '../data/cities';
+
 
 // City suggestions pool
 const cityPool = [
@@ -38,6 +40,7 @@ interface HomeProps {
 export default function Home({ isDark, toggleTheme }: HomeProps) {
   const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState('');
+  const [suggestions, setSuggestions] = useState<City[]>([]);
   const [showModal, setShowModal] = useState(false);
   const [activeTab, setActiveTab] = useState('signin');
   const [showAdvanced, setShowAdvanced] = useState(false);
@@ -58,23 +61,47 @@ export default function Home({ isDark, toggleTheme }: HomeProps) {
     setSuggestedCities(shuffled.slice(0, 5));
   }, []);
 
-  const handleSearch = () => {
-    // Check if at least one property type is selected
-    if (!propertyTypes.rent && !propertyTypes.sale) {
-      alert('Please select at least one property type (Rent or Sale)');
-      return;
-    }
-    
-    if (searchQuery.trim()) {
-      navigate(`/search?city=${encodeURIComponent(searchQuery)}&rent=${propertyTypes.rent}&sale=${propertyTypes.sale}`);
-    }
-  };
+const handleSearch = () => {
+  if (!propertyTypes.rent && !propertyTypes.sale) {
+    alert('Please select at least one property type (Rent or Sale)');
+    return;
+  }
+  
+  // پیدا کردن شهر انتخاب شده در لیست کامل شهرها
+  const selectedCity = cities.find(c => c.persian === searchQuery.trim());
+
+  if (selectedCity) {
+    // اگر شهر معتبر بود، با نام انگلیسی آن به صفحه نتایج برو
+    navigate(`/search?city=${encodeURIComponent(selectedCity.english.toLowerCase())}&rent=${propertyTypes.rent}&sale=${propertyTypes.sale}`);
+  } else {
+    alert('لطفاً یک شهر معتبر از لیست انتخاب کنید یا نام آن را به درستی وارد کنید.');
+  }
+};
 
   const handleKeyPress = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter') {
       handleSearch();
     }
   };
+
+const handleCityInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const query = e.target.value;
+  setSearchQuery(query);
+
+  if (query.length > 0) {
+    const filteredSuggestions = cities.filter(city =>
+      city.persian.startsWith(query)
+    );
+    setSuggestions(filteredSuggestions);
+  } else {
+    setSuggestions([]);
+  }
+};
+
+const handleSuggestionClick = (city: City) => {
+  setSearchQuery(city.persian);
+  setSuggestions([]);
+};
 
   const handleModalOpen = () => {
     setShowModal(true);
@@ -152,7 +179,7 @@ export default function Home({ isDark, toggleTheme }: HomeProps) {
                 <input
                   type="text"
                   value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
+                  onChange={handleCityInputChange}
                   onKeyPress={handleKeyPress}
                   placeholder="type the city name"
                   className={`flex-1 px-6 py-4 text-lg rounded-l-2xl border-0 focus:outline-none focus:ring-0 ${
@@ -160,6 +187,7 @@ export default function Home({ isDark, toggleTheme }: HomeProps) {
                       ? 'bg-gray-800 text-white placeholder-gray-400' 
                       : 'bg-white text-gray-900 placeholder-gray-500'
                   }`}
+                  autoComplete="off"
                 />
                 <button
                   onClick={handleSearch}
@@ -173,6 +201,26 @@ export default function Home({ isDark, toggleTheme }: HomeProps) {
                   <span className="hidden sm:inline">Search</span>
                 </button>
               </div>
+              
+            {suggestions.length > 0 && (
+  <div className={`absolute top-full left-0 right-0 mt-2 rounded-lg shadow-lg z-10 overflow-hidden ${
+    isDark ? 'bg-gray-800 border border-gray-700' : 'bg-white border'
+  }`}>
+    <ul className="max-h-60 overflow-y-auto">
+      {suggestions.map((city) => (
+        <li
+          key={city.english}
+          onClick={() => handleSuggestionClick(city)}
+          className={`px-4 py-3 cursor-pointer transition-colors text-right ${ // text-right برای فارسی
+            isDark ? 'hover:bg-gray-700' : 'hover:bg-gray-100'
+          }`}
+        >
+          {city.persian}
+        </li>
+      ))}
+    </ul>
+  </div>
+)}
             </div>
             
             {/* Search suggestions */}

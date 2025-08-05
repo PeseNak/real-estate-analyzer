@@ -13,6 +13,7 @@ interface PropertyCardProps {
     price_per_m2_toman?: number;
     deposit_toman?: number;
     monthly_rent_toman?: number;
+    image?: string;
   };
   isDark: boolean;
   type: 'sale' | 'rent';
@@ -30,7 +31,7 @@ export default function PropertyCard({ property, isDark, type }: PropertyCardPro
         {/* Property Image */}
         <div className="relative h-48 overflow-hidden">
           <img 
-            src={placeholderImage} 
+            src={property.image || placeholderImage} 
             alt="Real estate property"
             className="w-full h-full object-cover transition-transform duration-300 hover:scale-110"
           />
