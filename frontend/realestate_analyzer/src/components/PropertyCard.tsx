@@ -1,6 +1,6 @@
 import React from 'react';
 // We use different icons that match our new data
-import { Bed, Square, Wallet, Calendar, KeyRound, Home, Link as LinkIcon } from 'lucide-react';
+import { Bed, Square, Wallet, Calendar, KeyRound, Home, Lightbulb, Link as LinkIcon } from 'lucide-react';
 
 // ## 1. This interface is now updated to match the backend data
 interface PropertyCardProps {
@@ -14,6 +14,7 @@ interface PropertyCardProps {
     deposit_toman?: number;
     monthly_rent_toman?: number;
     image?: string;
+    explanation?: string;
   };
   isDark: boolean;
   type: 'sale' | 'rent';
@@ -89,6 +90,18 @@ export default function PropertyCard({ property, isDark, type }: PropertyCardPro
               <span>{property.area_m2} m²</span>
             </div>
           </div>
+          {property.explanation && (
+            <div className="mt-4 pt-4 border-t border-gray-700/50">
+              <h4 className={`flex items-center gap-2 text-sm font-semibold mb-2 ${
+                isDark ? 'text-yellow-400' : 'text-yellow-600'
+              }`}>
+                <Lightbulb size={16} /> AI Insight
+              </h4>
+              <p className={`text-xs ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>
+                {property.explanation}
+              </p>
+            </div>
+          )}
         </div>
       </div>
       

@@ -60,8 +60,9 @@ def run_scraper(city: str, scroll_count: int = 3, is_headless: bool = True):
                 By.CSS_SELECTOR, "p.kt-unexpandable-row__value")
             try:
                 image_element = WebDriverWait(driver, 10).until(
-                            EC.presence_of_element_located((By.CSS_SELECTOR, "img.kt-image-block__image.kt-image-block__image--fading"))
-                        )
+                    EC.presence_of_element_located(
+                        (By.CSS_SELECTOR, "img.kt-image-block__image.kt-image-block__image--fading"))
+                )
                 image_url = image_element.get_attribute("src")
             except:
                 image_url = "https://iliadata.ir/images/estate_images/default.jpg"

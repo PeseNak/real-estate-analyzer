@@ -270,7 +270,7 @@ export const cities: City[] = [
   { persian: "اشتهارد", english: "Eshtehard" },
   { persian: "کرج", english: "Karaj" },
   { persian: "نظر آباد", english: "Nazarabad" },
-  { persian: "ساوجبلاغ", english: "Savojbolagh" },
+  { persian: "هشتگرد", english: "Hashtgerd" },
   { persian: "فردیس", english: "Fardis" },
   { persian: "سنندج", english: "Sanandaj" },
   { persian: "دیواندره", english: "Divandarreh" },

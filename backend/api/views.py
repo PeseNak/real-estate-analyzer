@@ -52,9 +52,21 @@ def get_city_data_view(request, city_name):
     top_sales_links = analyze_properties_with_azure_ai(all_sales, "sale")
     top_rentals_links = analyze_properties_with_azure_ai(all_rentals, "rent")
 
-    top_5_sales = [p for p in all_sales if p.get('link') in top_sales_links]
-    top_5_rentals = [p for p in all_rentals if p.get(
-        'link') in top_rentals_links]
+    # top_5_sales = [p for p in all_sales if p.get('link') in top_sales_links]
+    # top_5_rentals = [p for p in all_rentals if p.get(
+    #     'link') in top_rentals_links]
+
+    sales_explanation_map = {item.get('link'): item.get('explanation') for item in top_sales_links}
+    rentals_explanation_map = {item.get('link'): item.get('explanation') for item in top_rentals_links}
+
+    top_5_sales = [p for p in all_sales if p.get('link') in sales_explanation_map]
+    top_5_rentals = [p for p in all_rentals if p.get('link') in rentals_explanation_map]
+
+    for prop in top_5_sales:
+        prop['explanation'] = sales_explanation_map.get(prop['link'])
+    
+    for prop in top_5_rentals:
+        prop['explanation'] = rentals_explanation_map.get(prop['link'])
 
     print(
         f"[SUCCESS] AI analysis completed for {city_name}. Returning top results.")
@@ -71,6 +83,23 @@ def analyze_properties_with_azure_ai(property_list, property_type):
     if not property_list:
         print("[WARN] Property list is empty. Skipping AI analysis.")
         return []
+    
+    properties_for_ai = []
+    for prop in property_list:
+        clean_prop = {
+            "link": prop.get("link"),
+            "area_m2": prop.get("area_m2"),
+            "building_age": prop.get("building_age"),
+            "room_count": prop.get("room_count"),
+        }
+        if prop.get("total_price_toman"):
+            clean_prop["total_price_toman"] = prop.get("total_price_toman")
+            clean_prop["price_per_m2_toman"] = prop.get("price_per_m2_toman")
+        if prop.get("deposit_toman"):
+            clean_prop["deposit_toman"] = prop.get("deposit_toman")
+            clean_prop["monthly_rent_toman"] = prop.get("monthly_rent_toman")
+        
+        properties_for_ai.append(clean_prop)
 
     endpoint = "https://models.github.ai/inference"
     model = "openai/gpt-4.1"
@@ -82,15 +111,27 @@ def analyze_properties_with_azure_ai(property_list, property_type):
     )
 
     type_in_persian = "فروش" if property_type == "sale" else "اجاره"
-
-    system_prompt = "شما یک دستیار متخصص در ارزیابی آگهی‌های ملکی در ایران هستید. وظیفه شما انتخاب بهترین گزینه‌ها و برگرداندن لیستی از لینک‌های آن‌هاست."
+    system_prompt = "شما یک دستیار هوش مصنوعی و متخصص در تحلیل و ارزیابی املاک در ایران هستید. وظیفه شما انتخاب بهترین گزینه‌ها و ارائه دلیل برای هر انتخاب است."
+        
     user_prompt = f"""
-    در ادامه {len(property_list)} آگهی مسکن برای {type_in_persian} آمده است.
-    هر آگهی یک دیکشنری شامل اطلاعاتی مثل قیمت، متراژ و لینک است.
-    لطفاً فقط ۵ مورد برتر را بر اساس بهترین ارزش (مقرون‌به‌صرفه‌ترین، بهترین نسبت قیمت به متراژ) انتخاب کن و فقط لینک‌هایشان را در خطوط جداگانه برگردان. از هرگونه متن اضافی خودداری کن.
-    
+    در ادامه لیستی از آگهی‌های مسکن برای {type_in_persian} آمده است.
+    لطفاً حداقل ۳ و حداکثر ۵ مورد برتر را بر اساس بهترین ارزش (نسبت قیمت به متراژ، سن بنا و ویژگی‌های دیگر) انتخاب کن.
+
+    برای هر ملک که انتخاب می‌کنی، یک توضیح کوتاه ۲ تا ۳ جمله‌ای به زبان فارسی بنویس که چرا آن را به عنوان یک گزینه خوب انتخاب کردی.
+
+    پاسخ خود را **فقط و فقط** در قالب یک آرایه JSON معتبر برگردان.
+    هر آبجکت در این آرایه باید دقیقاً دو کلید داشته باشد:
+    ۱. "link" (که مقدار آن لینک آگهی است)
+    ۲. "explanation" (که مقدار آن توضیح شماست)
+
+    مثال فرمت خروجی:
+    [
+    {{"link": "https://divar.ir/v/...", "explanation": "این ملک به دلیل قیمت بسیار مناسب به ازای هر متر و سن کم بنا، یک گزینه عالی برای سرمایه‌گذاری است."}},
+    {{"link": "https://divar.ir/v/...", "explanation": "با توجه به متراژ بالا و تعداد اتاق خواب، این آپارتمان برای خانواده‌های پرجمعیت بسیار ارزشمند است."}}
+    ]
+
     لیست آگهی‌ها:
-    {json.dumps(property_list, ensure_ascii=False, indent=2)}
+    {json.dumps(properties_for_ai, ensure_ascii=False, indent=2)}
     """
 
     try:
@@ -104,10 +145,14 @@ def analyze_properties_with_azure_ai(property_list, property_type):
         ai_response_content = response.choices[0].message.content
         print("[AI] Raw response received from AI.")
 
-        links = [line.strip() for line in ai_response_content.splitlines()
-                 if line.strip().startswith('http')]
-        print(f"[AI] Extracted {len(links)} top links from AI response.")
-        return links
+        ai_results = json.loads(ai_response_content)
+
+        if isinstance(ai_results, list):
+            return ai_results
+        for key in ai_results.keys():
+            if isinstance(ai_results[key], list):
+                return ai_results[key]
+        return []
 
     except Exception as e:
         print(f"[ERROR] AI request failed: {e}")

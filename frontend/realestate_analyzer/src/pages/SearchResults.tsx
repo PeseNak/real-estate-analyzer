@@ -17,6 +17,7 @@ interface Property {
   price_per_m2_toman?: number;
   deposit_toman?: number;
   monthly_rent_toman?: number;
+  explanation?: string;
 }
 
 interface ApiResults {
