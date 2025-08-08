@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import Header from '../components/Header';
 import AuthModal from '../components/AuthModal';
 import { cities, City } from '../data/cities';
+import AnimatedTagline from '../components/AnimatedTagline'; 
 
 
 // City suggestions pool
@@ -15,21 +16,7 @@ const cityPool = [
   "Karaj",
   "Isfahan",
   "Shiraz",
-  "Ahvaz",
   "Rasht",
-  "Yazd",
-  "Sari",
-  "Hamedan",
-  "Gorgan",
-  "Urmia",
-  "Bushehr",
-  "Zanjan",
-  "Qazvin",
-  "Ardabil",
-  "Kerman",
-  "Kermanshah",
-  "Zahedan",
-  "Semnan"
 ];
 
 interface HomeProps {
@@ -173,11 +160,7 @@ const handleSuggestionClick = (city: City) => {
             }`}>
               PropAk
             </h1>
-            <p className={`text-lg sm:text-xl ${
-              isDark ? 'text-gray-400' : 'text-gray-600'
-            }`}>
-              Find the best property with one click!
-            </p>
+              <AnimatedTagline isDark={isDark} />
           </div>
 
           {/* Search section */}
