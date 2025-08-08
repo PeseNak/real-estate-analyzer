@@ -57,7 +57,7 @@ export default function Header({ isDark, toggleTheme, handleModalOpen }: HeaderP
             <span className={`text-xl font-bold ${
               isDark ? 'text-white' : 'text-gray-900'
             }`}>
-              MMD
+              PROPAK
             </span>
           </Link>
         </div>

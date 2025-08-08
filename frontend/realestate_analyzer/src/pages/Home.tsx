@@ -67,14 +67,18 @@ const handleSearch = () => {
     return;
   }
   
-  // پیدا کردن شهر انتخاب شده در لیست کامل شهرها
-  const selectedCity = cities.find(c => c.persian === searchQuery.trim());
+  const query = searchQuery.trim();
+  const queryLower = query.toLowerCase();
+  
+  const selectedCity = cities.find(
+    c => c.persian === query || c.english.toLowerCase() === queryLower
+  );
 
   if (selectedCity) {
-    // اگر شهر معتبر بود، با نام انگلیسی آن به صفحه نتایج برو
+
     navigate(`/search?city=${encodeURIComponent(selectedCity.english.toLowerCase())}&rent=${propertyTypes.rent}&sale=${propertyTypes.sale}`);
   } else {
-    alert('لطفاً یک شهر معتبر از لیست انتخاب کنید یا نام آن را به درستی وارد کنید.');
+    alert('Please select a valid city from the list or enter its name correctly.');
   }
 };
 
@@ -89,8 +93,10 @@ const handleCityInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
   setSearchQuery(query);
 
   if (query.length > 0) {
+    const queryLower = query.toLowerCase();
     const filteredSuggestions = cities.filter(city =>
-      city.persian.startsWith(query)
+      city.persian.startsWith(query) || 
+      city.english.toLowerCase().startsWith(queryLower)
     );
     setSuggestions(filteredSuggestions);
   } else {
@@ -99,9 +105,15 @@ const handleCityInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
 };
 
 const handleSuggestionClick = (city: City) => {
-  setSearchQuery(city.persian);
+  // Check if the user was typing in Persian
+  const isTypingPersian = /[\u0600-\u06FF]/.test(searchQuery);
+
+  // Set the input to the same language the user was typing in
+  setSearchQuery(isTypingPersian ? city.persian : city.english);
+  
   setSuggestions([]);
 };
+
 
   const handleModalOpen = () => {
     setShowModal(true);
@@ -159,7 +171,7 @@ const handleSuggestionClick = (city: City) => {
                 ? 'text-transparent bg-clip-text bg-gradient-to-r from-white via-gray-300 to-gray-500' 
                 : 'text-transparent bg-clip-text bg-gradient-to-r from-gray-900 via-gray-700 to-gray-500'
             }`}>
-              MMD
+              PropAk
             </h1>
             <p className={`text-lg sm:text-xl ${
               isDark ? 'text-gray-400' : 'text-gray-600'
@@ -209,14 +221,15 @@ const handleSuggestionClick = (city: City) => {
     <ul className="max-h-60 overflow-y-auto">
       {suggestions.map((city) => (
         <li
-          key={city.english}
-          onClick={() => handleSuggestionClick(city)}
-          className={`px-4 py-3 cursor-pointer transition-colors text-right ${ // text-right برای فارسی
-            isDark ? 'hover:bg-gray-700' : 'hover:bg-gray-100'
-          }`}
-        >
-          {city.persian}
-        </li>
+  key={city.english}
+  onClick={() => handleSuggestionClick(city)}
+  className={`px-4 py-3 cursor-pointer transition-colors ${ // We removed text-right to support both languages
+    isDark ? 'hover:bg-gray-700' : 'hover:bg-gray-100'
+  }`}
+>
+  {/* If the search query contains Persian characters, show the Persian name, otherwise show the English name */}
+  {/[\u0600-\u06FF]/.test(searchQuery) ? city.persian : city.english}
+</li>
       ))}
     </ul>
   </div>
@@ -314,7 +327,7 @@ const handleSuggestionClick = (city: City) => {
               <p className={`text-sm ${
                 isDark ? 'text-gray-400' : 'text-gray-600'
               }`}>
-                © 2025 MMD. All rights reserved.
+                © 2025 Propak. All rights reserved.
               </p>
             </div>
           </div>

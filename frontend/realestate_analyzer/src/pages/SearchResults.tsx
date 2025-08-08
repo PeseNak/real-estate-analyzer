@@ -159,7 +159,7 @@ export default function SearchResults({
                   <h2 className="text-2xl font-bold mb-8">
                     Properties for Sale
                   </h2>
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-6">
+                  <div className="flex flex-wrap justify-center gap-6">
                     {results.sales_properties.map((property, index) => (
                       <PropertyCard
                         key={`sale-${index}`}
@@ -177,7 +177,7 @@ export default function SearchResults({
                   <h2 className="text-2xl font-bold mb-8">
                     Properties for Rent
                   </h2>
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-6">
+                  <div className="flex flex-wrap justify-center gap-6">
                     {results.rentals_properties.map((property, index) => (
                       <PropertyCard
                         key={`rent-${index}`}

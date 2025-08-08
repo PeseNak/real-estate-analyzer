@@ -25,7 +25,7 @@ export default function PropertyCard({ property, isDark, type }: PropertyCardPro
   const placeholderImage = `https://picsum.photos/seed/${property.link}/500/300`;
 
   return (
-    <div className={`rounded-xl overflow-hidden shadow-lg flex flex-col justify-between transition-all duration-300 hover:shadow-xl hover:scale-105 ${
+    <div className={`w-full sm:w-[48%] md:w-[31%] lg:w-[23%] xl:w-[18%] rounded-xl overflow-hidden shadow-lg flex flex-col justify-between transition-all duration-300 hover:shadow-xl hover:scale-105 ${
       isDark ? 'bg-gray-800 border border-gray-700' : 'bg-white border border-gray-200'
     }`}>
       <div>
