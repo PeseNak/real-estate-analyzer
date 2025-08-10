@@ -1,14 +1,15 @@
 import React from 'react';
-import { Moon, Sun, User, Zap } from 'lucide-react';
+import { Moon, Sun, User, Zap, LogOut } from 'lucide-react';
 import { Link } from 'react-router-dom';
-
 interface HeaderProps {
   isDark: boolean;
   toggleTheme: () => void;
   handleModalOpen: () => void;
+  currentUser: string | null; // نام کاربری یا null
+  onLogout: () => void; // تابع خروج
 }
 
-export default function Header({ isDark, toggleTheme, handleModalOpen }: HeaderProps) {
+export default function Header({ isDark, toggleTheme, handleModalOpen, currentUser, onLogout }: HeaderProps) {
   return (
     <header className={`sticky top-0 z-50 transition-all duration-300 ${
       isDark 
@@ -20,16 +21,25 @@ export default function Header({ isDark, toggleTheme, handleModalOpen }: HeaderP
           
           {/* Left side - Auth buttons */}
           <div className="flex items-center space-x-4">
-            <button 
-              onClick={handleModalOpen}
-              className={`flex items-center space-x-2 px-4 py-2 rounded-lg font-medium transition-all duration-200 ${
-              isDark 
-                ? 'bg-gray-700 hover:bg-gray-600 text-white' 
-                : 'bg-gray-100 hover:bg-gray-200 text-gray-700'
-            }`}>
-              <User size={18} />
-              <span>Sign In / Sign Up</span>
-            </button>
+            {currentUser ? (
+              // اگر کاربر وارد شده بود:
+              <div className="flex items-center space-x-4">
+                <span className="text-sm font-medium">خوش آمدی، {currentUser}!</span>
+                <button
+                  onClick={onLogout}
+                  className={`flex items-center space-x-2 px-3 py-2 rounded-lg ...`}
+                >
+                  <LogOut size={16} />
+                  <span>خروج</span>
+                </button>
+              </div>
+            ) : (
+              // اگر کاربر وارد نشده بود:
+              <button onClick={handleModalOpen} className={`flex items-center ...`}>
+                <User size={18} />
+                <span>Sign In / Sign Up</span>
+              </button>
+            )}
             
             {/* Theme toggle */}
             <button

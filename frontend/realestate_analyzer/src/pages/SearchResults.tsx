@@ -29,11 +29,15 @@ interface ApiResults {
 interface SearchResultsProps {
   isDark: boolean;
   toggleTheme: () => void;
+  currentUser: string | null; // <-- Add this
+  onLogout: () => void;       // <-- Add this
 }
 
 export default function SearchResults({
   isDark,
   toggleTheme,
+  currentUser,
+  onLogout,
 }: SearchResultsProps) {
   const [searchParams] = useSearchParams();
   const [isLoading, setIsLoading] = useState(true);
@@ -114,6 +118,8 @@ export default function SearchResults({
         isDark={isDark}
         toggleTheme={toggleTheme}
         handleModalOpen={handleModalOpen}
+        currentUser={currentUser}
+        onLogout={onLogout}
       />
 
       <main className="flex-1">

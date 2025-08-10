@@ -22,9 +22,12 @@ const cityPool = [
 interface HomeProps {
   isDark: boolean;
   toggleTheme: () => void;
+  currentUser: string | null;
+  onLogin: (username: string) => void;
+  onLogout: () => void;
 }
 
-export default function Home({ isDark, toggleTheme }: HomeProps) {
+export default function Home({ isDark, toggleTheme, currentUser, onLogin, onLogout }: HomeProps) {
   const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState('');
   const [suggestions, setSuggestions] = useState<City[]>([]);
@@ -60,6 +63,12 @@ const handleSearch = () => {
   const selectedCity = cities.find(
     c => c.persian === query || c.english.toLowerCase() === queryLower
   );
+
+if (!currentUser && selectedCity && !cityPool.includes(selectedCity.english.toLowerCase())) {
+      alert('برای جستجوی این شهر، لطفاً ابتدا وارد حساب کاربری خود شوید.');
+      handleModalOpen();
+      return;
+    }
 
   if (selectedCity) {
 
@@ -125,14 +134,31 @@ const handleSuggestionClick = (city: City) => {
     setPropertyTypes(prev => ({ ...prev, [type]: !prev[type] }));
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (activeTab === 'signin') {
-      alert(`Sign In: ${formData.username}`);
-    } else {
-      alert(`Sign Up: ${formData.username} - ${formData.email}`);
+    const endpoint = activeTab === 'signin' ? 'login' : 'register';
+    const url = `http://127.0.0.1:8000/api/${endpoint}/`;
+    const payload = activeTab === 'signin' 
+        ? { username: formData.username, password: formData.password }
+        : { username: formData.username, email: formData.email, password: formData.password };
+
+    try {
+      const response = await fetch(url, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
+      const result = await response.json();
+      if (!response.ok) throw new Error(result.error);
+      
+      alert(result.message);
+      if (activeTab === 'signin') {
+        onLogin(result.username); // <-- فراخوانی تابع onLogin از App.tsx
+      }
+      handleModalClose();
+    } catch (error: any) {
+      alert(`Error: ${error.message}`);
     }
-    handleModalClose();
   };
 
   return (
@@ -144,7 +170,9 @@ const handleSuggestionClick = (city: City) => {
       <Header 
         isDark={isDark} 
         toggleTheme={toggleTheme} 
-        handleModalOpen={handleModalOpen} 
+        handleModalOpen={handleModalOpen}
+        currentUser={currentUser} // <-- ارسال props به هدر
+        onLogout={onLogout}       // <-- ارسال props به هدر
       />
 
       {/* Main content */}
