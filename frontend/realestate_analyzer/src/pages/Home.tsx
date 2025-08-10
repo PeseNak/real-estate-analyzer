@@ -256,45 +256,39 @@ const handleSuggestionClick = (city: City) => {
                   showAdvanced ? 'max-h-32 opacity-100' : 'max-h-0 opacity-0'
                 }`}>
                   <div className={`p-4 rounded-lg transform transition-all duration-300 ${
-                    showAdvanced ? 'translate-y-0' : '-translate-y-2'
-                  } ${isDark ? 'bg-gray-800' : 'bg-gray-100'}`}>
-                    <div className="flex justify-center space-x-6">
-                      <label className="flex items-center space-x-2 cursor-pointer">
-                        <input
-                          type="checkbox"
-                          checked={propertyTypes.rent}
-                          onChange={() => handlePropertyTypeChange('rent')}
-                          className={`w-4 h-4 text-blue-600 rounded focus:ring-blue-500 focus:ring-2 border-2 ${
-                            isDark 
-                              ? 'bg-gray-800 border-gray-600 checked:bg-blue-600' 
-                              : 'bg-gray-100 border-gray-300 checked:bg-blue-600'
-                          }`}
-                        />
-                        <span className={`text-sm font-medium ${
-                          isDark ? 'text-gray-300' : 'text-gray-700'
-                        }`}>
-                          Rent
-                        </span>
-                      </label>
-                      <label className="flex items-center space-x-2 cursor-pointer">
-                        <input
-                          type="checkbox"
-                          checked={propertyTypes.sale}
-                          onChange={() => handlePropertyTypeChange('sale')}
-                          className={`w-4 h-4 text-blue-600 rounded focus:ring-blue-500 focus:ring-2 border-2 ${
-                            isDark 
-                              ? 'bg-gray-800 border-gray-600 checked:bg-blue-600' 
-                              : 'bg-gray-100 border-gray-300 checked:bg-blue-600'
-                          }`}
-                        />
-                        <span className={`text-sm font-medium ${
-                          isDark ? 'text-gray-300' : 'text-gray-700'
-                        }`}>
-                          Sale
-                        </span>
-                      </label>
-                    </div>
-                  </div>
+  showAdvanced ? 'translate-y-0' : '-translate-y-2'
+}`}>
+  
+  {/* The container for our button group */}
+  <div className={`flex w-full max-w-xs mx-auto p-1 rounded-xl gap-1 ${
+    isDark ? 'bg-gray-700' : 'bg-gray-200'
+  }`}>
+    {/* Rent Button */}
+    <button
+      onClick={() => handlePropertyTypeChange('rent')}
+      className={`w-1/2 py-2 rounded-lg text-sm font-semibold transition-all duration-200 focus:outline-none ${
+        propertyTypes.rent
+          ? (isDark ? 'bg-blue-600 text-white shadow-md' : 'bg-white text-gray-900 shadow-md')
+          : (isDark ? 'text-gray-400 hover:bg-gray-600/50' : 'text-gray-500 hover:bg-white/50')
+      }`}
+    >
+      For Rent
+    </button>
+    
+    {/* Sale Button */}
+    <button
+      onClick={() => handlePropertyTypeChange('sale')}
+      className={`w-1/2 py-2 rounded-lg text-sm font-semibold transition-all duration-200 focus:outline-none ${
+        propertyTypes.sale
+          ? (isDark ? 'bg-blue-600 text-white shadow-md' : 'bg-white text-gray-900 shadow-md')
+          : (isDark ? 'text-gray-400 hover:bg-gray-600/50' : 'text-gray-500 hover:bg-white/50')
+      }`}
+    >
+      For Sale
+    </button>
+  </div>
+
+</div>
                 </div>
               </div>
             </div>
