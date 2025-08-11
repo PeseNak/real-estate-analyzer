@@ -24,13 +24,13 @@ export default function Header({ isDark, toggleTheme, handleModalOpen, currentUs
             {currentUser ? (
               // اگر کاربر وارد شده بود:
               <div className="flex items-center space-x-4">
-                <span className="text-sm font-medium">خوش آمدی، {currentUser}!</span>
+                <span className="text-sm font-medium">Welcome {currentUser} !</span>
                 <button
                   onClick={onLogout}
                   className={`flex items-center space-x-2 px-3 py-2 rounded-lg ...`}
                 >
                   <LogOut size={16} />
-                  <span>خروج</span>
+                  <span>Log Out</span>
                 </button>
               </div>
             ) : (

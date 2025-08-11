@@ -5,45 +5,39 @@ import Header from '../components/Header';
 import AuthModal from '../components/AuthModal';
 import { cities, City } from '../data/cities';
 import AnimatedTagline from '../components/AnimatedTagline'; 
-
+import { AuthModalProps } from '../App';
 
 // City suggestions pool
 const cityPool = [
-    "Tehran",
-  "Mashhad",
-  "Tabriz",
-  "Qom",
-  "Karaj",
-  "Isfahan",
-  "Shiraz",
-  "Rasht",
+    "tehran",
+  "mashhad",
+  "tabriz",
+  "qom",
+  "karaj",
+  "isfahan",
+  "shiraz",
+  "rasht",
 ];
 
 interface HomeProps {
   isDark: boolean;
   toggleTheme: () => void;
   currentUser: string | null;
-  onLogin: (username: string) => void;
   onLogout: () => void;
+  authModal: AuthModalProps;
 }
 
-export default function Home({ isDark, toggleTheme, currentUser, onLogin, onLogout }: HomeProps) {
+export default function Home({ isDark, toggleTheme, currentUser, onLogout, authModal }: HomeProps) {
   const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState('');
   const [suggestions, setSuggestions] = useState<City[]>([]);
-  const [showModal, setShowModal] = useState(false);
-  const [activeTab, setActiveTab] = useState('signin');
   const [showAdvanced, setShowAdvanced] = useState(false);
   const [suggestedCities, setSuggestedCities] = useState<string[]>([]);
   const [propertyTypes, setPropertyTypes] = useState({
     rent: true,
     sale: true
   });
-  const [formData, setFormData] = useState({
-    username: '',
-    email: '',
-    password: ''
-  });
+
 
   // Generate random city suggestions
   useEffect(() => {
@@ -66,7 +60,7 @@ const handleSearch = () => {
 
 if (!currentUser && selectedCity && !cityPool.includes(selectedCity.english.toLowerCase())) {
       alert('برای جستجوی این شهر، لطفاً ابتدا وارد حساب کاربری خود شوید.');
-      handleModalOpen();
+      authModal.handleModalOpen();
       return;
     }
 
@@ -110,55 +104,8 @@ const handleSuggestionClick = (city: City) => {
   setSuggestions([]);
 };
 
-
-  const handleModalOpen = () => {
-    setShowModal(true);
-    setActiveTab('signin');
-    setFormData({ username: '', email: '', password: '' });
-  };
-
-  const handleModalClose = () => {
-    setShowModal(false);
-  };
-
-  const handleTabChange = (tab: string) => {
-    setActiveTab(tab);
-    setFormData({ username: '', email: '', password: '' });
-  };
-
-  const handleInputChange = (field: string, value: string) => {
-    setFormData(prev => ({ ...prev, [field]: value }));
-  };
-
   const handlePropertyTypeChange = (type: 'rent' | 'sale') => {
     setPropertyTypes(prev => ({ ...prev, [type]: !prev[type] }));
-  };
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    const endpoint = activeTab === 'signin' ? 'login' : 'register';
-    const url = `http://127.0.0.1:8000/api/${endpoint}/`;
-    const payload = activeTab === 'signin' 
-        ? { username: formData.username, password: formData.password }
-        : { username: formData.username, email: formData.email, password: formData.password };
-
-    try {
-      const response = await fetch(url, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload),
-      });
-      const result = await response.json();
-      if (!response.ok) throw new Error(result.error);
-      
-      alert(result.message);
-      if (activeTab === 'signin') {
-        onLogin(result.username); // <-- فراخوانی تابع onLogin از App.tsx
-      }
-      handleModalClose();
-    } catch (error: any) {
-      alert(`Error: ${error.message}`);
-    }
   };
 
   return (
@@ -170,7 +117,7 @@ const handleSuggestionClick = (city: City) => {
       <Header 
         isDark={isDark} 
         toggleTheme={toggleTheme} 
-        handleModalOpen={handleModalOpen}
+        handleModalOpen={authModal.handleModalOpen}
         currentUser={currentUser} // <-- ارسال props به هدر
         onLogout={onLogout}       // <-- ارسال props به هدر
       />
@@ -346,14 +293,14 @@ const handleSuggestionClick = (city: City) => {
       </main>
 
       <AuthModal
-        showModal={showModal}
+        showModal={authModal.showModal}
         isDark={isDark}
-        activeTab={activeTab}
-        formData={formData}
-        handleModalClose={handleModalClose}
-        handleTabChange={handleTabChange}
-        handleInputChange={handleInputChange}
-        handleSubmit={handleSubmit}
+        activeTab={authModal.activeTab}
+        formData={authModal.formData}
+        handleModalClose={authModal.handleModalClose}
+        handleTabChange={authModal.handleTabChange}
+        handleInputChange={authModal.handleInputChange}
+        handleSubmit={authModal.handleSubmit}
       />
     </div>
   );
