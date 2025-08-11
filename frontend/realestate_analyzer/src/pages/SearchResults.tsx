@@ -4,6 +4,7 @@ import { Loader2, ServerCrash } from "lucide-react";
 import Header from "../components/Header";
 import AuthModal from "../components/AuthModal";
 import PropertyCard from "../components/PropertyCard";
+import { AuthModalProps } from '../App';
 
 // =================================================================
 // ## 1. DEFINING TYPES FOR OUR BACKEND DATA
@@ -29,11 +30,17 @@ interface ApiResults {
 interface SearchResultsProps {
   isDark: boolean;
   toggleTheme: () => void;
+  currentUser: string | null; // <-- Add this
+  onLogout: () => void;       // <-- Add this
+  authModal: AuthModalProps;
 }
 
 export default function SearchResults({
   isDark,
   toggleTheme,
+  currentUser,
+  onLogout,
+  authModal,
 }: SearchResultsProps) {
   const [searchParams] = useSearchParams();
   const [isLoading, setIsLoading] = useState(true);
@@ -43,9 +50,6 @@ export default function SearchResults({
   const city = searchParams.get("city") || "";
   const showRent = searchParams.get("rent") === "true";
   const showSale = searchParams.get("sale") === "true";
-
-  // Modal state (simplified)
-  const [showModal, setShowModal] = React.useState(false);
 
   // =================================================================
   // ## 2. FETCHING REAL DATA FROM THE DJANGO API
@@ -91,9 +95,7 @@ export default function SearchResults({
     }
   }, [city]); // This effect runs whenever the 'city' in the URL changes
 
-  // Modal handlers (simplified)
-  const handleModalOpen = () => setShowModal(true);
-  const handleModalClose = () => setShowModal(false);
+
 
   // Determine which sections to show
   const sectionsToShow = [];
@@ -113,7 +115,9 @@ export default function SearchResults({
       <Header
         isDark={isDark}
         toggleTheme={toggleTheme}
-        handleModalOpen={handleModalOpen}
+        handleModalOpen={authModal.handleModalOpen}
+        currentUser={currentUser}
+        onLogout={onLogout}
       />
 
       <main className="flex-1">
@@ -205,14 +209,14 @@ export default function SearchResults({
 
       {/* Simplified AuthModal call */}
       <AuthModal
-        showModal={showModal}
+        showModal={authModal.showModal}
         isDark={isDark}
-        activeTab={"signin"}
-        formData={{ username: "", email: "", password: "" }}
-        handleModalClose={handleModalClose}
-        handleTabChange={() => {}}
-        handleInputChange={() => {}}
-        handleSubmit={() => {}}
+        activeTab={authModal.activeTab}
+        formData={authModal.formData}
+        handleModalClose={authModal.handleModalClose}
+        handleTabChange={authModal.handleTabChange}
+        handleInputChange={authModal.handleInputChange}
+        handleSubmit={authModal.handleSubmit}
       />
     </div>
   );

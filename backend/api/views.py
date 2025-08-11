@@ -1,5 +1,7 @@
 from django.http import JsonResponse
-from django.shortcuts import render
+from django.views.decorators.csrf import csrf_exempt
+from django.contrib.auth.hashers import make_password, check_password
+
 from dotenv import load_dotenv
 from datetime import datetime, timedelta
 import json
@@ -157,3 +159,82 @@ def analyze_properties_with_azure_ai(property_list, property_type):
     except Exception as e:
         print(f"[ERROR] AI request failed: {e}")
         return []
+
+
+USERS_FILE = 'users.json'
+
+@csrf_exempt # این دکوراتور برای تست با Postman یا فرانت‌اند در حالت توسعه لازم است
+def register_view(request):
+    if request.method == 'POST':
+        data = json.loads(request.body)
+        username = data.get('username')
+        email = data.get('email')
+        password = data.get('password')
+
+        if not all([username, email, password]):
+            return JsonResponse({'error': 'All fields are required'}, status=400)
+
+        # خواندن کاربران موجود
+        try:
+            with open(USERS_FILE, 'r') as f:
+                users = json.load(f)
+        except (FileNotFoundError, json.JSONDecodeError):
+            users = []
+
+        # چک کردن اینکه آیا نام کاربری یا ایمیل تکراری است
+        if any(u['username'] == username for u in users):
+            return JsonResponse({'error': 'Username already exists'}, status=400)
+        if any(u['email'] == email for u in users):
+            return JsonResponse({'error': 'Email already registered'}, status=400)
+
+        # هش کردن پسورد برای امنیت
+        hashed_password = make_password(password)
+
+        # اضافه کردن کاربر جدید
+        new_user = {
+            'username': username,
+            'email': email,
+            'password': hashed_password
+        }
+        users.append(new_user)
+
+        # ذخیره لیست جدید کاربران
+        with open(USERS_FILE, 'w') as f:
+            json.dump(users, f, indent=2)
+
+        return JsonResponse({'message': 'User registered successfully!'}, status=201)
+    
+    return JsonResponse({'error': 'Only POST method is allowed'}, status=405)
+
+
+@csrf_exempt
+def login_view(request):
+    if request.method == 'POST':
+        data = json.loads(request.body)
+        username = data.get('username')
+        password = data.get('password')
+
+        if not all([username, password]):
+            return JsonResponse({'error': 'Username and password are required'}, status=400)
+
+        try:
+            with open(USERS_FILE, 'r') as f:
+                users = json.load(f)
+        except (FileNotFoundError, json.JSONDecodeError):
+            return JsonResponse({'error': 'Invalid credentials'}, status=400)
+
+        user_found = None
+        for user in users:
+            if user['username'] == username:
+                user_found = user
+                break
+        
+        if user_found and check_password(password, user_found['password']):
+            return JsonResponse({
+                'message': f'Welcome back, {username}!',
+                'username': user_found['username']
+            })
+        else:
+            return JsonResponse({'error': 'Invalid credentials'}, status=400)
+            
+    return JsonResponse({'error': 'Only POST method is allowed'}, status=405)

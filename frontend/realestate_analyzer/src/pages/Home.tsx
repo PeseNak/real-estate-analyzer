@@ -5,42 +5,39 @@ import Header from '../components/Header';
 import AuthModal from '../components/AuthModal';
 import { cities, City } from '../data/cities';
 import AnimatedTagline from '../components/AnimatedTagline'; 
-
+import { AuthModalProps } from '../App';
 
 // City suggestions pool
 const cityPool = [
-    "Tehran",
-  "Mashhad",
-  "Tabriz",
-  "Qom",
-  "Karaj",
-  "Isfahan",
-  "Shiraz",
-  "Rasht",
+    "tehran",
+  "mashhad",
+  "tabriz",
+  "qom",
+  "karaj",
+  "isfahan",
+  "shiraz",
+  "rasht",
 ];
 
 interface HomeProps {
   isDark: boolean;
   toggleTheme: () => void;
+  currentUser: string | null;
+  onLogout: () => void;
+  authModal: AuthModalProps;
 }
 
-export default function Home({ isDark, toggleTheme }: HomeProps) {
+export default function Home({ isDark, toggleTheme, currentUser, onLogout, authModal }: HomeProps) {
   const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState('');
   const [suggestions, setSuggestions] = useState<City[]>([]);
-  const [showModal, setShowModal] = useState(false);
-  const [activeTab, setActiveTab] = useState('signin');
   const [showAdvanced, setShowAdvanced] = useState(false);
   const [suggestedCities, setSuggestedCities] = useState<string[]>([]);
   const [propertyTypes, setPropertyTypes] = useState({
     rent: true,
     sale: true
   });
-  const [formData, setFormData] = useState({
-    username: '',
-    email: '',
-    password: ''
-  });
+
 
   // Generate random city suggestions
   useEffect(() => {
@@ -60,6 +57,12 @@ const handleSearch = () => {
   const selectedCity = cities.find(
     c => c.persian === query || c.english.toLowerCase() === queryLower
   );
+
+if (!currentUser && selectedCity && !cityPool.includes(selectedCity.english.toLowerCase())) {
+      alert('برای جستجوی این شهر، لطفاً ابتدا وارد حساب کاربری خود شوید.');
+      authModal.handleModalOpen();
+      return;
+    }
 
   if (selectedCity) {
 
@@ -101,38 +104,8 @@ const handleSuggestionClick = (city: City) => {
   setSuggestions([]);
 };
 
-
-  const handleModalOpen = () => {
-    setShowModal(true);
-    setActiveTab('signin');
-    setFormData({ username: '', email: '', password: '' });
-  };
-
-  const handleModalClose = () => {
-    setShowModal(false);
-  };
-
-  const handleTabChange = (tab: string) => {
-    setActiveTab(tab);
-    setFormData({ username: '', email: '', password: '' });
-  };
-
-  const handleInputChange = (field: string, value: string) => {
-    setFormData(prev => ({ ...prev, [field]: value }));
-  };
-
   const handlePropertyTypeChange = (type: 'rent' | 'sale') => {
     setPropertyTypes(prev => ({ ...prev, [type]: !prev[type] }));
-  };
-
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (activeTab === 'signin') {
-      alert(`Sign In: ${formData.username}`);
-    } else {
-      alert(`Sign Up: ${formData.username} - ${formData.email}`);
-    }
-    handleModalClose();
   };
 
   return (
@@ -144,7 +117,9 @@ const handleSuggestionClick = (city: City) => {
       <Header 
         isDark={isDark} 
         toggleTheme={toggleTheme} 
-        handleModalOpen={handleModalOpen} 
+        handleModalOpen={authModal.handleModalOpen}
+        currentUser={currentUser} // <-- ارسال props به هدر
+        onLogout={onLogout}       // <-- ارسال props به هدر
       />
 
       {/* Main content */}
@@ -186,7 +161,7 @@ const handleSuggestionClick = (city: City) => {
                 />
                 <button
                   onClick={handleSearch}
-                  className={`flex items-center space-x-2 px-8 py-4 rounded-r-2xl font-semibold text-lg transition-all duration-200 ${
+                  className={`flex items-center space-x-2 px-4 sm:px-8 py-5 sm:py-4 rounded-r-2xl font-semibold text-lg transition-all duration-200 ${
                     isDark 
                       ? 'bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white shadow-lg hover:shadow-blue-500/25' 
                       : 'bg-gradient-to-r from-gray-900 to-gray-800 hover:from-gray-800 hover:to-gray-700 text-white shadow-lg hover:shadow-gray-500/25'
@@ -312,14 +287,14 @@ const handleSuggestionClick = (city: City) => {
       </main>
 
       <AuthModal
-        showModal={showModal}
+        showModal={authModal.showModal}
         isDark={isDark}
-        activeTab={activeTab}
-        formData={formData}
-        handleModalClose={handleModalClose}
-        handleTabChange={handleTabChange}
-        handleInputChange={handleInputChange}
-        handleSubmit={handleSubmit}
+        activeTab={authModal.activeTab}
+        formData={authModal.formData}
+        handleModalClose={authModal.handleModalClose}
+        handleTabChange={authModal.handleTabChange}
+        handleInputChange={authModal.handleInputChange}
+        handleSubmit={authModal.handleSubmit}
       />
     </div>
   );
