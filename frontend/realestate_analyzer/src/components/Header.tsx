@@ -20,24 +20,31 @@ export default function Header({ isDark, toggleTheme, handleModalOpen, currentUs
         <div className="flex items-center justify-between h-16">
           
           {/* Left side - Auth buttons */}
-          <div className="flex items-center space-x-4">
+          <div className="flex items-center space-x-2 sm:space-x-4">
             {currentUser ? (
               // اگر کاربر وارد شده بود:
-              <div className="flex items-center space-x-4">
-                <span className="text-sm font-medium">Welcome {currentUser} !</span>
+              <div className="flex items-center space-x-2 sm:space-x-4">
+                <span className="text-sm font-medium hidden sm:inline">Welcome {currentUser} !</span>
                 <button
                   onClick={onLogout}
-                  className={`flex items-center space-x-2 px-3 py-2 rounded-lg ...`}
+                  className={`flex items-center space-x-2 px-3 py-2 rounded-lg font-medium transition-all duration-200 ${
+              isDark 
+                ? 'bg-gray-700 hover:bg-gray-600 text-white' 
+                : 'bg-gray-100 hover:bg-gray-200 text-gray-700'}`}
                 >
-                  <LogOut size={16} />
-                  <span>Log Out</span>
+                  <LogOut size={18} />
+                  <span className="hidden sm:inline">Log Out</span>
                 </button>
               </div>
             ) : (
               // اگر کاربر وارد نشده بود:
-              <button onClick={handleModalOpen} className={`flex items-center ...`}>
+              <button onClick={handleModalOpen} className={`flex items-center space-x-2 px-4 py-2 rounded-lg font-medium transition-all duration-200 ${
+              isDark 
+                ? 'bg-gray-700 hover:bg-gray-600 text-white' 
+                : 'bg-gray-100 hover:bg-gray-200 text-gray-700'
+            }`}>
                 <User size={18} />
-                <span>Sign In / Sign Up</span>
+                <span className="hidden sm:inline">Sign In / Sign Up</span>
               </button>
             )}
             

@@ -161,7 +161,7 @@ const handleSuggestionClick = (city: City) => {
                 />
                 <button
                   onClick={handleSearch}
-                  className={`flex items-center space-x-2 px-8 py-4 rounded-r-2xl font-semibold text-lg transition-all duration-200 ${
+                  className={`flex items-center space-x-2 px-4 sm:px-8 py-5 sm:py-4 rounded-r-2xl font-semibold text-lg transition-all duration-200 ${
                     isDark 
                       ? 'bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white shadow-lg hover:shadow-blue-500/25' 
                       : 'bg-gradient-to-r from-gray-900 to-gray-800 hover:from-gray-800 hover:to-gray-700 text-white shadow-lg hover:shadow-gray-500/25'

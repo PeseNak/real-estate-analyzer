@@ -30,7 +30,7 @@ export default function AnimatedTagline({ isDark }: AnimatedTaglineProps) {
 
   // We need to define the height of each line for the slide effect.
   // In Tailwind, h-8 is 2rem, which works well for text-xl.
-  const slideHeight = 2; // in rem units
+  const slideHeight = 2.5; // in rem units
 
   return (
     // 1. This is the outer container, our "viewport".
@@ -49,7 +49,7 @@ export default function AnimatedTagline({ isDark }: AnimatedTaglineProps) {
           <p
             key={index}
             style={{ height: `${slideHeight}rem` }}
-            className={`flex items-center justify-center text-lg sm:text-xl ${
+            className={`flex items-center justify-center text-base sm:text-lg lg:text-xl ${
               isDark ? 'text-gray-400' : 'text-gray-600'
             }`}
           >
