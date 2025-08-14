@@ -1,7 +1,7 @@
 import json
 from django.core.management.base import BaseCommand
-from scraper.divaar_scrap import run_scraper as run_divar_scraper
-from scraper.sheypoor_scrap import run_scraper as run_sheypoor_scraper
+from core.scrapers.divaar_scrap import run_scraper as run_divar_scraper
+from core.scrapers.sheypoor_scrap import run_scraper as run_sheypoor_scraper
 
 
 class Command(BaseCommand):

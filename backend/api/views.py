@@ -11,8 +11,8 @@ from azure.ai.inference import ChatCompletionsClient
 from azure.ai.inference.models import SystemMessage, UserMessage
 from azure.core.credentials import AzureKeyCredential
 
-from scraper.divaar_scrap import run_scraper as run_divar_scraper
-from scraper.sheypoor_scrap import run_scraper as run_sheypoor_scraper
+from core.scrapers.divaar_scrap import run_scraper as run_divar_scraper
+from core.scrapers.sheypoor_scrap import run_scraper as run_sheypoor_scraper
 
 
 def get_city_data_view(request, city_name):
