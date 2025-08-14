@@ -17,7 +17,7 @@ from scraper.sheypoor_scrap import run_scraper as run_sheypoor_scraper
 
 def get_city_data_view(request, city_name):
 
-    sale_filename = f"database/{city_name}_sales.json"
+    sale_filename = f"database/scrap/{city_name}_sales.json"
     should_scrape = False
 
     if os.path.exists(sale_filename):
@@ -32,31 +32,36 @@ def get_city_data_view(request, city_name):
         should_scrape = True
 
     if should_scrape:
+
+        with open('database/cities.json', 'r', encoding='utf-8') as f:
+            cities_data = json.load(f)
+        for city in cities_data:
+            if city["english"].lower() == city_name:
+                divar_city_name = city["divar"]
+                sheypoor_city_name = city["sheypoor"]
+                break
+
         print("[SCRAPER] Starting scraping process...")
-        divar_sale, divar_rent = run_divar_scraper(city_name, 2)
-        sheypoor_sale, sheypoor_rent = run_sheypoor_scraper(city_name, 10)
+        divar_sale, divar_rent = run_divar_scraper(divar_city_name, 2)
+        sheypoor_sale, sheypoor_rent = run_sheypoor_scraper(sheypoor_city_name, 10)
         all_sales = divar_sale + sheypoor_sale
         all_rentals = divar_rent + sheypoor_rent
 
         with open(sale_filename, 'w', encoding='utf-8') as f:
             json.dump(all_sales, f, ensure_ascii=False, indent=2)
-        with open(f"database/{city_name}_rentals.json", 'w', encoding='utf-8') as f:
+        with open(f"database/scrap/{city_name}_rentals.json", 'w', encoding='utf-8') as f:
             json.dump(all_rentals, f, ensure_ascii=False, indent=2)
 
         print("[SCRAPER] Scraping and saving completed successfully.")
     else:
         with open(sale_filename, 'r', encoding='utf-8') as f:
             all_sales = json.load(f)
-        with open(f"database/{city_name}_rentals.json", 'r', encoding='utf-8') as f:
+        with open(f"database/scrap/{city_name}_rentals.json", 'r', encoding='utf-8') as f:
             all_rentals = json.load(f)
 
     print("[AI] Sending data to Azure AI for analysis...")
     top_sales_links = analyze_properties_with_azure_ai(all_sales, "sale")
     top_rentals_links = analyze_properties_with_azure_ai(all_rentals, "rent")
-
-    # top_5_sales = [p for p in all_sales if p.get('link') in top_sales_links]
-    # top_5_rentals = [p for p in all_rentals if p.get(
-    #     'link') in top_rentals_links]
 
     sales_explanation_map = {item.get('link'): item.get('explanation') for item in top_sales_links}
     rentals_explanation_map = {item.get('link'): item.get('explanation') for item in top_rentals_links}
@@ -161,9 +166,9 @@ def analyze_properties_with_azure_ai(property_list, property_type):
         return []
 
 
-USERS_FILE = 'users.json'
+USERS_FILE = r'database/users.json'
 
-@csrf_exempt # این دکوراتور برای تست با Postman یا فرانت‌اند در حالت توسعه لازم است
+@csrf_exempt
 def register_view(request):
     if request.method == 'POST':
         data = json.loads(request.body)
@@ -174,23 +179,20 @@ def register_view(request):
         if not all([username, email, password]):
             return JsonResponse({'error': 'All fields are required'}, status=400)
 
-        # خواندن کاربران موجود
+
         try:
             with open(USERS_FILE, 'r') as f:
                 users = json.load(f)
         except (FileNotFoundError, json.JSONDecodeError):
             users = []
 
-        # چک کردن اینکه آیا نام کاربری یا ایمیل تکراری است
         if any(u['username'] == username for u in users):
             return JsonResponse({'error': 'Username already exists'}, status=400)
         if any(u['email'] == email for u in users):
             return JsonResponse({'error': 'Email already registered'}, status=400)
 
-        # هش کردن پسورد برای امنیت
         hashed_password = make_password(password)
 
-        # اضافه کردن کاربر جدید
         new_user = {
             'username': username,
             'email': email,
@@ -198,7 +200,6 @@ def register_view(request):
         }
         users.append(new_user)
 
-        # ذخیره لیست جدید کاربران
         with open(USERS_FILE, 'w') as f:
             json.dump(users, f, indent=2)
 

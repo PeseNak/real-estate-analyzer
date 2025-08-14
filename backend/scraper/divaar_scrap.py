@@ -7,7 +7,6 @@ from selenium.webdriver.chrome.service import Service
 from persian_tools import digits
 from tqdm import tqdm
 from time import sleep
-import os
 
 
 def run_scraper(city: str, scroll_count: int = 3, is_headless: bool = True):
@@ -26,30 +25,30 @@ def run_scraper(city: str, scroll_count: int = 3, is_headless: bool = True):
         print("bastan map be moshkel khod!!!")
 
     for _ in range(scroll_count):
-        WebDriverWait(driver, 5).until(
+        WebDriverWait(driver, 3).until(
             EC.presence_of_element_located((By.CSS_SELECTOR, "a.kt-post-card__action")))
         temp = driver.find_elements(
             By.CSS_SELECTOR, "a.kt-post-card__action")
         for element in temp:
-            isbad = False
-            for word in ["روزانه", "صنعتی", "تجاری", "اداری", "پانسیون", "مغازه", "هم خونه", "همخونه",]:
+            should_skip = False
+            for word in ["روزانه", "صنعتی", "تجاری", "اداری", "پانسیون", "مغازه", "هم خونه", "همخونه", "هم خانه", "همخانه"]:
                 if word in element.find_element(By.TAG_NAME, "h2").text:
-                    isbad = True
+                    should_skip = True
                     break
-            if isbad:
-                print(f"&&&&&&&&{element.get_attribute("href")}")
+            if should_skip:
+                print(f"&&&&&&&&{element.get_attribute('href')}")
                 continue
             ads_link.add(element.get_attribute("href"))
         driver.execute_script(
             "window.scrollTo(0, document.body.scrollHeight);")
-        sleep(1)
+        sleep(0.8)
 
     print("*******************tedad link ha: ", len(ads_link))
 
     for link in tqdm(ads_link, desc="diavr scraping"):
         driver.get(link)
         try:
-            WebDriverWait(driver, 5).until(
+            WebDriverWait(driver, 3).until(
                 EC.presence_of_element_located((By.CSS_SELECTOR, "td.kt-group-row-item.kt-group-row-item__value.kt-group-row-item--info-row")))
         except:
             continue
@@ -59,7 +58,7 @@ def run_scraper(city: str, scroll_count: int = 3, is_headless: bool = True):
             value1 = driver.find_elements(
                 By.CSS_SELECTOR, "p.kt-unexpandable-row__value")
             try:
-                image_element = WebDriverWait(driver, 10).until(
+                image_element = WebDriverWait(driver, 2).until(
                     EC.presence_of_element_located(
                         (By.CSS_SELECTOR, "img.kt-image-block__image.kt-image-block__image--fading"))
                 )
@@ -76,34 +75,36 @@ def run_scraper(city: str, scroll_count: int = 3, is_headless: bool = True):
             if value2[2] == "بدون اتاق":
                 value2[2] = 0
             if value2[1] == "قبل از ۱۳۷۰":
-                value2[1] == "1369"
+                building_age = "more than 30"
+            else:
+                building_age = 1404 - int(value2[1])
 
             ad_data = {
                 "link": link,
                 "image": image_url,
                 "area_m2": int(value2[0]),
-                "building_age": 1404 - int(value2[1]),
+                "building_age": building_age,
                 "room_count": int(value2[2])
             }
 
             if 'قیمت کل' in keys:
-                gheymat_kol = keys.index("قیمت کل")
-                gheymat_metri = keys.index("قیمت هر متر")
-                if value1[gheymat_kol].replace("،", "").replace(" تومان", "") == "توافقی":
+                total_price = keys.index("قیمت کل")
+                price_per_m2 = keys.index("قیمت هر متر")
+                if value1[total_price].replace("،", "").replace(" تومان", "") == "توافقی":
                     continue
-                if value1[gheymat_metri].replace("،", "").replace(" تومان", "") == "توافقی":
+                if value1[price_per_m2].replace("،", "").replace(" تومان", "") == "توافقی":
                     continue
-                ad_data["total_price_toman"] = int(value1[gheymat_kol].replace(
+                ad_data["total_price_toman"] = int(value1[total_price].replace(
                     "،", "").replace(" تومان", ""))
-                ad_data["price_per_m2_toman"] = int(value1[gheymat_metri].replace(
+                ad_data["price_per_m2_toman"] = int(value1[price_per_m2].replace(
                     "،", "").replace(" تومان", ""))
                 for_sale.append(ad_data)
             elif 'ودیعه' in keys:
-                ejare_avalie = keys.index("ودیعه")
-                ejare_mahane = keys.index("اجارهٔ ماهانه")
-                ad_data["deposit_toman"] = int(value1[ejare_avalie].replace(
+                deposit = keys.index("ودیعه")
+                rent = keys.index("اجارهٔ ماهانه")
+                ad_data["deposit_toman"] = int(value1[deposit].replace(
                     "،", "").replace(" تومان", ""))
-                ad_data["monthly_rent_toman"] = int(value1[ejare_mahane].replace(
+                ad_data["monthly_rent_toman"] = int(value1[rent].replace(
                     "،", "").replace(" تومان", ""))
                 for_rent.append(ad_data)
             else:
@@ -139,14 +140,12 @@ def get_driver(headless):
     options.add_argument('--disable-component-update')
     options.add_argument('--disable-domain-reliability')
     options.add_argument('--disable-breakpad')
+
+    options.add_argument('user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/127.0.0.0 Safari/537.36')
     if headless:
         options.add_argument('--headless=new')
 
-    script_dir = os.path.dirname(os.path.abspath(__file__))
-
-    driver_path = os.path.join(script_dir, '..', 'chromedriver.exe')
-    service = Service(driver_path)
-    driver = webdriver.Chrome(service=service, options=options)
+    driver = webdriver.Chrome(options=options)
     return driver
 
 
