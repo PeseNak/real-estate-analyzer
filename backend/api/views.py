@@ -43,10 +43,13 @@ def get_city_data_view(request, city_name):
 
         print("[SCRAPER] Starting scraping process...")
         divar_sale, divar_rent = run_divar_scraper(divar_city_name, 2)
-        sheypoor_sale, sheypoor_rent = run_sheypoor_scraper(sheypoor_city_name, 10)
+        sheypoor_sale, sheypoor_rent = run_sheypoor_scraper(
+            sheypoor_city_name, 10)
         all_sales = divar_sale + sheypoor_sale
         all_rentals = divar_rent + sheypoor_rent
 
+        os.makedirs(os.path.dirname(sale_filename),
+                    exist_ok=True)  # added by Mohammad
         with open(sale_filename, 'w', encoding='utf-8') as f:
             json.dump(all_sales, f, ensure_ascii=False, indent=2)
         with open(f"database/scrap/{city_name}_rentals.json", 'w', encoding='utf-8') as f:
@@ -63,15 +66,19 @@ def get_city_data_view(request, city_name):
     top_sales_links = analyze_properties_with_azure_ai(all_sales, "sale")
     top_rentals_links = analyze_properties_with_azure_ai(all_rentals, "rent")
 
-    sales_explanation_map = {item.get('link'): item.get('explanation') for item in top_sales_links}
-    rentals_explanation_map = {item.get('link'): item.get('explanation') for item in top_rentals_links}
+    sales_explanation_map = {item.get('link'): item.get(
+        'explanation') for item in top_sales_links}
+    rentals_explanation_map = {item.get('link'): item.get(
+        'explanation') for item in top_rentals_links}
 
-    top_5_sales = [p for p in all_sales if p.get('link') in sales_explanation_map]
-    top_5_rentals = [p for p in all_rentals if p.get('link') in rentals_explanation_map]
+    top_5_sales = [p for p in all_sales if p.get(
+        'link') in sales_explanation_map]
+    top_5_rentals = [p for p in all_rentals if p.get(
+        'link') in rentals_explanation_map]
 
     for prop in top_5_sales:
         prop['explanation'] = sales_explanation_map.get(prop['link'])
-    
+
     for prop in top_5_rentals:
         prop['explanation'] = rentals_explanation_map.get(prop['link'])
 
@@ -90,7 +97,7 @@ def analyze_properties_with_azure_ai(property_list, property_type):
     if not property_list:
         print("[WARN] Property list is empty. Skipping AI analysis.")
         return []
-    
+
     properties_for_ai = []
     for prop in property_list:
         clean_prop = {
@@ -105,7 +112,7 @@ def analyze_properties_with_azure_ai(property_list, property_type):
         if prop.get("deposit_toman"):
             clean_prop["deposit_toman"] = prop.get("deposit_toman")
             clean_prop["monthly_rent_toman"] = prop.get("monthly_rent_toman")
-        
+
         properties_for_ai.append(clean_prop)
 
     endpoint = "https://models.github.ai/inference"
@@ -119,7 +126,7 @@ def analyze_properties_with_azure_ai(property_list, property_type):
 
     type_in_persian = "فروش" if property_type == "sale" else "اجاره"
     system_prompt = "شما یک دستیار هوش مصنوعی و متخصص در تحلیل و ارزیابی املاک در ایران هستید. وظیفه شما انتخاب بهترین گزینه‌ها و ارائه دلیل برای هر انتخاب است."
-        
+
     user_prompt = f"""
     در ادامه لیستی از آگهی‌های مسکن برای {type_in_persian} آمده است.
     لطفاً حداقل ۳ و حداکثر ۵ مورد برتر را بر اساس بهترین ارزش (نسبت قیمت به متراژ، سن بنا و ویژگی‌های دیگر) انتخاب کن.
@@ -168,6 +175,7 @@ def analyze_properties_with_azure_ai(property_list, property_type):
 
 USERS_FILE = r'database/users.json'
 
+
 @csrf_exempt
 def register_view(request):
     if request.method == 'POST':
@@ -178,7 +186,6 @@ def register_view(request):
 
         if not all([username, email, password]):
             return JsonResponse({'error': 'All fields are required'}, status=400)
-
 
         try:
             with open(USERS_FILE, 'r') as f:
@@ -204,7 +211,7 @@ def register_view(request):
             json.dump(users, f, indent=2)
 
         return JsonResponse({'message': 'User registered successfully!'}, status=201)
-    
+
     return JsonResponse({'error': 'Only POST method is allowed'}, status=405)
 
 
@@ -229,7 +236,7 @@ def login_view(request):
             if user['username'] == username:
                 user_found = user
                 break
-        
+
         if user_found and check_password(password, user_found['password']):
             return JsonResponse({
                 'message': f'Welcome back, {username}!',
@@ -237,5 +244,5 @@ def login_view(request):
             })
         else:
             return JsonResponse({'error': 'Invalid credentials'}, status=400)
-            
+
     return JsonResponse({'error': 'Only POST method is allowed'}, status=405)
