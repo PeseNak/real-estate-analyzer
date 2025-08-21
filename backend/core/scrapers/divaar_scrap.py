@@ -3,62 +3,97 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.chrome.options import Options
-from selenium.webdriver.chrome.service import Service
+from selenium.common.exceptions import TimeoutException, NoSuchElementException
 from persian_tools import digits
 from tqdm import tqdm
 from time import sleep
+from datetime import datetime
 
 
-def run_scraper(city: str, scroll_count: int = 3, is_headless: bool = True):
-    driver = get_driver(is_headless)
-    ads_link = set()
-    for_sale = []
-    for_rent = []
-    err = []
-    try:
-        driver.get(f"https://divar.ir/s/{city}/real-estate")
-        close_map_button = driver.find_element(
-            By.CSS_SELECTOR, 'div.absolute-c06f1[role="button"]')
-        close_map_button.click()
+class DivarScraper:
+    def __init__(self):
+        self.driver = None
+
+    def __enter__(self):
+        self._init_driver()
+        return self
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        self._close_driver()
+
+    def _init_driver(self, is_headless: bool = True):
+        options = Options()
+        prefs = {"profile.managed_default_content_settings.images": 2}
+        options.add_experimental_option("prefs", prefs)
+        options.add_argument('--disable-gpu')
+        options.add_argument('--window-size=1920,1080')
+
+        options.add_argument('--disable-logging')
+        options.add_argument("--log-level=3")
+        options.add_argument('--disable-background-networking')
+        options.add_argument('--disable-client-side-phishing-detection')
+        options.add_argument('--disable-default-apps')
+        options.add_argument('--disable-sync')
+        options.add_argument('--metrics-recording-only')
+        options.add_argument('--no-first-run')
+        options.add_argument('--disable-component-update')
+        options.add_argument('--disable-domain-reliability')
+        options.add_argument('--disable-breakpad')
+
+        options.add_argument(
+            'user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/127.0.0.0 Safari/537.36')
+        if is_headless:
+            options.add_argument('--headless=new')
+
+        self.driver = webdriver.Chrome(options=options)
+
+    def _scrape_ad_links(self, city: str, scroll_count: int = 2):
+        self.ads_link = set()
+
+        self.driver.get(f"https://divar.ir/s/{city}/real-estate")
+        try:
+            close_map_button = self.driver.find_element(
+                By.CSS_SELECTOR, 'div.absolute-c06f1[role="button"]')
+            close_map_button.click()
+        except NoSuchElementException:
+            print("[Divar Scraper] Map not found, continuing...")
         sleep(1)
-    except:
-        print("bastan map be moshkel khod!!!")
 
-    for _ in range(scroll_count):
-        WebDriverWait(driver, 3).until(
-            EC.presence_of_element_located((By.CSS_SELECTOR, "a.kt-post-card__action")))
-        temp = driver.find_elements(
-            By.CSS_SELECTOR, "a.kt-post-card__action")
-        for element in temp:
-            should_skip = False
-            for word in ["روزانه", "صنعتی", "تجاری", "اداری", "پانسیون", "مغازه", "هم خونه", "همخونه", "هم خانه", "همخانه"]:
-                if word in element.find_element(By.TAG_NAME, "h2").text:
-                    should_skip = True
-                    break
-            if should_skip:
-                print(f"&&&&&&&&{element.get_attribute('href')}")
-                continue
-            ads_link.add(element.get_attribute("href"))
-        driver.execute_script(
-            "window.scrollTo(0, document.body.scrollHeight);")
-        sleep(0.8)
+        for _ in range(scroll_count):
+            WebDriverWait(self.driver, 3).until(
+                EC.presence_of_element_located((By.CSS_SELECTOR, "a.kt-post-card__action")))
+            temp = self.driver.find_elements(
+                By.CSS_SELECTOR, "a.kt-post-card__action")
+            for element in temp:
+                should_skip = False
+                for word in ["روزانه", "صنعتی", "تجاری", "اداری", "پانسیون", "مغازه", "هم خونه", "همخونه", "هم خانه", "همخانه"]:
+                    if word in element.find_element(By.TAG_NAME, "h2").text:
+                        should_skip = True
+                        break
+                if should_skip:
+                    print(f"&&&&&&&&{element.get_attribute('href')}")
+                    continue
+                self.ads_link.add(element.get_attribute("href"))
+            self.driver.execute_script(
+                "window.scrollTo(0, document.body.scrollHeight);")
+            sleep(0.8)
 
-    print("*******************tedad link ha: ", len(ads_link))
+        return list(self.ads_link)
 
-    for link in tqdm(ads_link, desc="diavr scraping"):
-        driver.get(link)
+    def _scrape_ad_details(self, link: str):
+        self.driver.get(link)
         try:
-            WebDriverWait(driver, 3).until(
+            WebDriverWait(self.driver, 3).until(
                 EC.presence_of_element_located((By.CSS_SELECTOR, "td.kt-group-row-item.kt-group-row-item__value.kt-group-row-item--info-row")))
-        except:
-            continue
+        except TimeoutException:
+            return None, None
         try:
-            value2 = driver.find_elements(
+            value2 = self.driver.find_elements(
                 By.CSS_SELECTOR, "td.kt-group-row-item.kt-group-row-item__value.kt-group-row-item--info-row")
-            value1 = driver.find_elements(
+            value1 = self.driver.find_elements(
                 By.CSS_SELECTOR, "p.kt-unexpandable-row__value")
             try:
-                image_element = WebDriverWait(driver, 2).until(
+                image_element = WebDriverWait(self.driver, 2).until(
                     EC.presence_of_element_located(
                         (By.CSS_SELECTOR, "img.kt-image-block__image.kt-image-block__image--fading"))
                 )
@@ -68,7 +103,7 @@ def run_scraper(city: str, scroll_count: int = 3, is_headless: bool = True):
 
             value1 = [digits.convert_to_en(val.text) for val in value1]
             value2 = [digits.convert_to_en(val.text) for val in value2]
-            keys = driver.find_elements(
+            keys = self.driver.find_elements(
                 By.CSS_SELECTOR, "p.kt-base-row__title.kt-unexpandable-row__title")
             keys = list(map(lambda x: x.text, keys))
 
@@ -77,7 +112,8 @@ def run_scraper(city: str, scroll_count: int = 3, is_headless: bool = True):
             if value2[1] == "قبل از ۱۳۷۰":
                 building_age = "more than 30"
             else:
-                building_age = 1404 - int(value2[1])
+                current_year = datetime.now().year - 621
+                building_age = current_year - int(value2[1])
 
             ad_data = {
                 "link": link,
@@ -91,14 +127,14 @@ def run_scraper(city: str, scroll_count: int = 3, is_headless: bool = True):
                 total_price = keys.index("قیمت کل")
                 price_per_m2 = keys.index("قیمت هر متر")
                 if value1[total_price].replace("،", "").replace(" تومان", "") == "توافقی":
-                    continue
+                    return None, None
                 if value1[price_per_m2].replace("،", "").replace(" تومان", "") == "توافقی":
-                    continue
+                    return None, None
                 ad_data["total_price_toman"] = int(value1[total_price].replace(
                     "،", "").replace(" تومان", ""))
                 ad_data["price_per_m2_toman"] = int(value1[price_per_m2].replace(
                     "،", "").replace(" تومان", ""))
-                for_sale.append(ad_data)
+                return ad_data, "sale"
             elif 'ودیعه' in keys:
                 deposit = keys.index("ودیعه")
                 rent = keys.index("اجارهٔ ماهانه")
@@ -106,47 +142,36 @@ def run_scraper(city: str, scroll_count: int = 3, is_headless: bool = True):
                     "،", "").replace(" تومان", ""))
                 ad_data["monthly_rent_toman"] = int(value1[rent].replace(
                     "،", "").replace(" تومان", ""))
+                return ad_data, "rent"
+            else:
+                return None, None
+
+        except Exception as e:
+            print(f"[Divar Scraper] Error parsing {link}: {e}")
+            return None, None
+
+    def scrape(self, city: str, scroll_count: str = 2):
+        ad_links = self._scrape_ad_links(city, scroll_count)
+        print(f"[Divar Scraper] Found {len(ad_links)} unique ad links.")
+
+        for_sale = []
+        for_rent = []
+
+        for link in tqdm(ad_links, desc="Scraping Divar Details"):
+            ad_data, ad_type = self._scrape_ad_details(link)
+            if ad_type == 'sale':
+                for_sale.append(ad_data)
+            elif ad_type == 'rent':
                 for_rent.append(ad_data)
             else:
-                err.append({"link2": link})
                 continue
+        print(
+            f"[Divar Scraper] Finished. Found {len(for_sale)} sale and {len(for_rent)} rent properties.")
+        return for_sale, for_rent
 
-        except Exception as error:
-            print(error)
-            err.append({"link": link})
-    driver.quit()
-    print("***************Foroosh moafagh", len(for_sale))
-    print("*****************Ejare moafagh", len(for_rent))
-    print("*****************err moafagh", len(err))
-
-    return for_sale, for_rent
-
-
-def get_driver(headless):
-    options = Options()
-    prefs = {"profile.managed_default_content_settings.images": 2}
-    options.add_experimental_option("prefs", prefs)
-    options.add_argument('--disable-gpu')
-    options.add_argument('--window-size=1920,1080')
-
-    options.add_argument('--disable-logging')
-    options.add_argument("--log-level=3")
-    options.add_argument('--disable-background-networking')
-    options.add_argument('--disable-client-side-phishing-detection')
-    options.add_argument('--disable-default-apps')
-    options.add_argument('--disable-sync')
-    options.add_argument('--metrics-recording-only')
-    options.add_argument('--no-first-run')
-    options.add_argument('--disable-component-update')
-    options.add_argument('--disable-domain-reliability')
-    options.add_argument('--disable-breakpad')
-
-    options.add_argument('user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/127.0.0.0 Safari/537.36')
-    if headless:
-        options.add_argument('--headless=new')
-
-    driver = webdriver.Chrome(options=options)
-    return driver
+    def _close_driver(self):
+        if self.driver:
+            self.driver.quit()
 
 
 if __name__ == "__main__":

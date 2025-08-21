@@ -1,7 +1,7 @@
 import json
 from django.core.management.base import BaseCommand
-from core.scrapers.divaar_scrap import run_scraper as run_divar_scraper
-from core.scrapers.sheypoor_scrap import run_scraper as run_sheypoor_scraper
+from core.scrapers.divaar_scrap import DivarScraper
+from core.scrapers.sheypoor_scrap import SheypoorScraper
 
 
 class Command(BaseCommand):
@@ -26,10 +26,10 @@ class Command(BaseCommand):
         for city in hot_cities:
             self.stdout.write(f'Scraping data for: {city}')
             try:
-                divar_sale, divar_rent = run_divar_scraper(
-                    city, scroll_count=2)
-                sheypoor_sale, sheypoor_rent = run_sheypoor_scraper(
-                    city, scroll_count=10)
+                with DivarScraper() as divar_scraper:
+                    divar_sale, divar_rent = divar_scraper.scrape(city, 2)
+                with SheypoorScraper() as sheypoor_scraper:
+                    sheypoor_sale, sheypoor_rent = sheypoor_scraper.scrape(city, 8)
                 all_sales = divar_sale + sheypoor_sale
                 all_rentals = divar_rent + sheypoor_rent
 

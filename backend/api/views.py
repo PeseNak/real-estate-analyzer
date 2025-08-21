@@ -11,8 +11,8 @@ from azure.ai.inference import ChatCompletionsClient
 from azure.ai.inference.models import SystemMessage, UserMessage
 from azure.core.credentials import AzureKeyCredential
 
-from core.scrapers.divaar_scrap import run_scraper as run_divar_scraper
-from core.scrapers.sheypoor_scrap import run_scraper as run_sheypoor_scraper
+from core.scrapers.divaar_scrap import DivarScraper
+from core.scrapers.sheypoor_scrap import SheypoorScraper
 
 
 def get_city_data_view(request, city_name):
@@ -42,14 +42,19 @@ def get_city_data_view(request, city_name):
                 break
 
         print("[SCRAPER] Starting scraping process...")
-        divar_sale, divar_rent = run_divar_scraper(divar_city_name, 2)
-        sheypoor_sale, sheypoor_rent = run_sheypoor_scraper(
-            sheypoor_city_name, 10)
-        all_sales = divar_sale + sheypoor_sale
-        all_rentals = divar_rent + sheypoor_rent
+        try :
+            with DivarScraper() as divar_scraper:
+                divar_sale, divar_rent = divar_scraper.scrape(divar_city_name, 2)
+            with SheypoorScraper() as sheypoor_scraper:
+                sheypoor_sale, sheypoor_rent = sheypoor_scraper.scrape(sheypoor_city_name, 8)
+            all_sales = divar_sale + sheypoor_sale
+            all_rentals = divar_rent + sheypoor_rent
+        except Exception as e:
+            print(f"[ERROR] A critical scraping error occurred: {e}")
+            return JsonResponse({"error": "Failed to scrape data."}, status=500)
 
         os.makedirs(os.path.dirname(sale_filename),
-                    exist_ok=True)  # added by Mohammad
+                    exist_ok=True)
         with open(sale_filename, 'w', encoding='utf-8') as f:
             json.dump(all_sales, f, ensure_ascii=False, indent=2)
         with open(f"database/scrap/{city_name}_rentals.json", 'w', encoding='utf-8') as f:
