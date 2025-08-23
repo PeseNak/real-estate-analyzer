@@ -9,44 +9,10 @@ from tqdm import tqdm
 from time import sleep
 from datetime import datetime
 
+from .base_scraper import BaseScraper
 
-class DivarScraper:
-    def __init__(self):
-        self.driver = None
 
-    def __enter__(self):
-        self._init_driver()
-        return self
-
-    def __exit__(self, exc_type, exc_val, exc_tb):
-        self._close_driver()
-
-    def _init_driver(self, is_headless: bool = True):
-        options = Options()
-        prefs = {"profile.managed_default_content_settings.images": 2}
-        options.add_experimental_option("prefs", prefs)
-        options.add_argument('--disable-gpu')
-        options.add_argument('--window-size=1920,1080')
-
-        options.add_argument('--disable-logging')
-        options.add_argument("--log-level=3")
-        options.add_argument('--disable-background-networking')
-        options.add_argument('--disable-client-side-phishing-detection')
-        options.add_argument('--disable-default-apps')
-        options.add_argument('--disable-sync')
-        options.add_argument('--metrics-recording-only')
-        options.add_argument('--no-first-run')
-        options.add_argument('--disable-component-update')
-        options.add_argument('--disable-domain-reliability')
-        options.add_argument('--disable-breakpad')
-
-        options.add_argument(
-            'user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/127.0.0.0 Safari/537.36')
-        if is_headless:
-            options.add_argument('--headless=new')
-
-        self.driver = webdriver.Chrome(options=options)
-
+class DivarScraper(BaseScraper):
     def _scrape_ad_links(self, city: str, scroll_count: int = 2):
         self.ads_link = set()
 
@@ -150,7 +116,7 @@ class DivarScraper:
             print(f"[Divar Scraper] Error parsing {link}: {e}")
             return None, None
 
-    def scrape(self, city: str, scroll_count: str = 2):
+    def scrape(self, city: str, scroll_count: int = 2):
         ad_links = self._scrape_ad_links(city, scroll_count)
         print(f"[Divar Scraper] Found {len(ad_links)} unique ad links.")
 
@@ -168,11 +134,6 @@ class DivarScraper:
         print(
             f"[Divar Scraper] Finished. Found {len(for_sale)} sale and {len(for_rent)} rent properties.")
         return for_sale, for_rent
-
-    def _close_driver(self):
-        if self.driver:
-            self.driver.quit()
-
 
 if __name__ == "__main__":
     print("this is a module!")
