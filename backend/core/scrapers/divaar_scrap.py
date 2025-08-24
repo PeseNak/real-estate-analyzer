@@ -1,8 +1,6 @@
-from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
-from selenium.webdriver.chrome.options import Options
 from selenium.common.exceptions import TimeoutException, NoSuchElementException
 from persian_tools import digits
 from tqdm import tqdm
@@ -37,7 +35,7 @@ class DivarScraper(BaseScraper):
                         should_skip = True
                         break
                 if should_skip:
-                    print(f"&&&&&&&&{element.get_attribute('href')}")
+                    # print(f"&&&&&&&&{element.get_attribute('href')}")
                     continue
                 self.ads_link.add(element.get_attribute("href"))
             self.driver.execute_script(

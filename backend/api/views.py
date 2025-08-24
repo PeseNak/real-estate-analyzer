@@ -68,8 +68,8 @@ def get_city_data_view(request, city_name):
             all_rentals = json.load(f)
 
     print("[AI] Sending data to Azure AI for analysis...")
-    top_sales_links = analyze_properties_with_azure_ai(all_sales, "sale")
-    top_rentals_links = analyze_properties_with_azure_ai(all_rentals, "rent")
+    top_sales_links = analyze_properties_with_ai(all_sales, "sale")
+    top_rentals_links = analyze_properties_with_ai(all_rentals, "rent")
 
     sales_explanation_map = {item.get('link'): item.get(
         'explanation') for item in top_sales_links}
@@ -97,7 +97,7 @@ def get_city_data_view(request, city_name):
     return JsonResponse(response_data)
 
 
-def analyze_properties_with_azure_ai(property_list, property_type):
+def analyze_properties_with_ai(property_list, property_type):
 
     if not property_list:
         print("[WARN] Property list is empty. Skipping AI analysis.")

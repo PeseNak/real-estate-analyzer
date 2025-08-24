@@ -59,7 +59,7 @@ const handleSearch = () => {
   );
 
 if (!currentUser && selectedCity && !cityPool.includes(selectedCity.english.toLowerCase())) {
-      alert('برای جستجوی این شهر، لطفاً ابتدا وارد حساب کاربری خود شوید.');
+      alert('To search for this city, please log in to your account first.');
       authModal.handleModalOpen();
       return;
     }

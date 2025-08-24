@@ -1,8 +1,6 @@
-from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
-from selenium.webdriver.chrome.options import Options
 from persian_tools import digits
 from tqdm import tqdm
 from time import sleep
@@ -35,8 +33,8 @@ class SheypoorScraper(BaseScraper):
                         negotiableـprice = list(
                             map(lambda x: x.text, negotiableـprice))
                         if "توافقی" in negotiableـprice:
-                            print(
-                                f"TAVAFOGHI {element.get_attribute('href')}")
+                            # # print(
+                            #     f"TAVAFOGHI {element.get_attribute('href')}")
                             continue
                     should_skip = False
                     for word in ["روزانه", "صنعتی", "تجاری", "اداری", "پانسیون", "مغازه", "هم خونه", "همخونه", "هم خانه", "همخانه"]:
@@ -44,7 +42,7 @@ class SheypoorScraper(BaseScraper):
                             should_skip = True
                             break
                     if should_skip:
-                        print(f"&&&&&&&&{element.get_attribute("href")}")
+                        # print(f"&&&&&&&&{element.get_attribute("href")}")
                         continue
                     self.ads_link.add(element.get_attribute("href"))
             self.driver.execute_script(
